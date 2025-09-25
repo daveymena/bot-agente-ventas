@@ -2,20 +2,24 @@
   "version": 2,
   "builds": [
     {
-      "src": "main.py",
+      "src": "api.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/api.py"
+    },
+    {
       "src": "/(.*)",
-      "dest": "main.py"
+      "dest": "/api.py"
     }
   ],
   "env": {
-    "WHATSAPP_SERVER_URL": "@whatsapp_server_url",
-    "WHATSAPP_INSTANCE_NAME": "@whatsapp_instance_name",
-    "WHATSAPP_API_KEY": "@whatsapp_api_key",
-    "GOOGLE_GEMINI_API_KEY": "@google_gemini_api_key"
+    "GOOGLE_GEMINI_API_KEY": "@google-gemini-api-key",
+    "WHATSAPP_SERVER_URL": "@whatsapp-server-url",
+    "WHATSAPP_INSTANCE_NAME": "@whatsapp-instance-name",
+    "WHATSAPP_API_KEY": "@whatsapp-api-key"
   }
 }

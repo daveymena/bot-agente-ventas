@@ -317,6 +317,30 @@ python main.py
 ```
 Servidor básico para recibir webhooks.
 
+## 🌐 Opciones de Despliegue
+
+### **¡NO NECESITAS NGROK!** Elige una opción profesional:
+
+| Opción | Plataforma | Costo | URL | Dificultad |
+|--------|------------|-------|-----|------------|
+| 🏆 **Cloudflare Tunnel** | Local + Tunnel | Gratis | Permanente | Media |
+| ☁️ **Vercel** | Hosting | Gratis | Permanente | Baja |
+| 🚂 **Railway** | Hosting | Gratis | Permanente | Baja |
+| 📦 **VPS Gratuito** | Servidor | Gratis | Permanente | Alta |
+| 🔗 **ngrok** | Tunnel | Gratis | Temporal | Baja |
+
+### **🚀 Despliegue Rápido:**
+```bash
+python deploy_options.py
+```
+Elige la mejor opción para tu caso.
+
+### **🏆 Recomendado para Bot 24/7:**
+```bash
+python setup_24_7_bot.py
+```
+Configuración profesional con Docker + Cloudflare Tunnel para máxima disponibilidad.
+
 ## 🔧 Scripts de Utilidad
 
 ### Prueba de Configuración

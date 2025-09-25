@@ -1,45 +1,96 @@
-# Entorno virtual
+# ========================================
+# GITIGNORE - AGENTE DE VENTAS PYTHON
+# ========================================
+
+# Entornos virtuales
 venv/
 env/
 ENV/
+.venv/
+.env
 
 # Archivos de Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Variables de entorno
-.env
-.env.local
-.env.production
-
-# Logs
+# Archivos de logs
 logs/
 *.log
+temp/
+
+# Archivos de sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Archivos temporales
-temp/
-tmp/
+*.tmp
+*.temp
+.cache/
+.pytest_cache/
 
-# IDE
+# Archivos de IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# OS
-.DS_Store
-Thumbs.db
+# Archivos de configuración local
+.env.local
+.env.development
+.env.production
 
-# Base de datos
+# Archivos de datos
+data/
 *.db
+*.sqlite
 *.sqlite3
 
-# Credenciales
-config/secrets.json
-credentials.json
+# Archivos de testing
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
 
-# Archivos de sistema
-setup.sh
-fix_imports.py
+# Archivos de deployment
+.vercel/
+.railway/
+cloudflare-tunnel.yml
+docker-compose.yml
+Dockerfile
+
+# Archivos de documentación generados
+*.md.bak
+docs/build/
+
+# Archivos de backup
+*.bak
+*.backup
+*~
+
+# Archivos específicos del proyecto
+test_results/
+debug.log
