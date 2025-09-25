@@ -1,0 +1,45 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Variables de entorno
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+
+# Archivos temporales
+temp/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Base de datos
+*.db
+*.sqlite3
+
+# Credenciales
+config/secrets.json
+credentials.json
+
+# Archivos de sistema
+setup.sh
+fix_imports.py

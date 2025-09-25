@@ -1,0 +1,108 @@
+🚀 COMANDOS RÁPIDOS - AGENTE DE VENTAS CON EVOLUTION API
+========================================================
+
+📁 UBICACIÓN: C:\Users\ADMIN\Documents\worflows\agente_ventas_python
+
+🔑 CONFIGURACIÓN YA REALIZADA:
+   • Evolution API: https://evoapi2-evolution-api.ovw3ar.easypanel.host
+   • Instance ID: 03d935e9-4711-4011-9ead-4983e4f6b2b5
+   • API Key: 429683C4C977415CAAFCCE10F7D57E11
+   • IP Local: 192.168.18.69
+   • Google Gemini: Configurado ✅
+
+🎯 COMANDOS PRINCIPALES:
+=======================
+
+1️⃣ INICIAR EL BOT (RECOMENDADO):
+   python iniciar.py
+
+2️⃣ SISTEMA COMPLETO:
+   python run_complete_system.py
+
+3️⃣ BOT CON EVOLUTION:
+   python start_bot.py
+
+4️⃣ SOLO SERVIDOR WEBHOOK:
+   python main.py
+
+🧪 PRUEBAS Y VERIFICACIÓN:
+=========================
+
+5️⃣ PROBAR CONFIGURACIÓN:
+   python test_config.py
+
+6️⃣ PROBAR WEBHOOK:
+   python test_webhook.py
+
+7️⃣ VER ESTADO DEL SISTEMA:
+   curl http://localhost:8000/health
+
+📚 DOCUMENTACIÓN:
+================
+
+8️⃣ LEER DOCUMENTACIÓN:
+   • README.md - Documentación principal
+   • GUIA_EVOLUTION_API.md - Configuración Evolution
+
+🔧 CONFIGURACIÓN EVOLUTION API:
+==============================
+
+🌐 URL del Webhook para Evolution:
+   http://192.168.18.69:8000/webhook
+
+📋 Pasos en Evolution API:
+   1. Ve a: https://evoapi2-evolution-api.ovw3ar.easypanel.host/manager/instance/03d935e9-4711-4011-9ead-4983e4f6b2b5/webhook
+   2. Configura webhook con URL arriba
+   3. Método: POST
+   4. Eventos: messages.upsert
+   5. Token: 429683C4C977415CAAFCCE10F7D57E11
+
+🚨 SOLUCIÓN DE PROBLEMAS:
+========================
+
+❌ "Error de conexión":
+   • Verifica que la instancia esté conectada en Evolution
+   • Confirma tu IP: 192.168.18.69
+   • Asegúrate de que el puerto 8000 esté abierto
+
+❌ "Servicio de IA no configurado":
+   • Google Gemini ya está configurado ✅
+   • No se necesita configuración adicional
+
+❌ "Webhook no funciona":
+   • Ejecuta: python test_webhook.py
+   • Verifica logs: logs/agente_ventas.log
+   • Revisa configuración en Evolution API
+
+📊 MONITOREO:
+============
+
+🔍 Ver logs en tiempo real:
+   type logs\agente_ventas.log
+
+🌐 Ver estado del servidor:
+   http://localhost:8000/health
+
+📱 Ver productos disponibles:
+   http://localhost:8000/products
+
+🔄 SINCRONIZACIÓN:
+================
+
+El bot se sincroniza automáticamente con:
+   ✅ Evolution API (mensajes de WhatsApp)
+   ✅ Google Gemini (respuestas de IA)
+   ✅ MegaPack y MegaComputer (productos)
+   ✅ Memoria de conversación
+
+🎉 ¡TODO CONFIGURADO!
+====================
+
+Tu agente de ventas está 100% configurado y listo para:
+   ✅ Responder consultas de productos tecnológicos
+   ✅ Mantener conversaciones contextuales
+   ✅ Procesar mensajes de voz (transcripción)
+   ✅ Enviar información de precios y disponibilidad
+   ✅ Recomendar productos basados en consultas
+
+🚀 ¡Solo ejecuta "python iniciar.py" y configura el webhook en Evolution API!

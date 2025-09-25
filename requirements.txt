@@ -1,0 +1,50 @@
+# Dependencias del Agente de Ventas Python
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# HTTP Client
+aiohttp==3.9.1
+httpx==0.25.2
+
+# Para Ollama (local)
+requests==2.31.0
+
+# IA y Machine Learning
+google-generativeai==0.3.1
+openai==1.3.7
+langchain==0.0.354
+
+# Procesamiento de HTML
+beautifulsoup4==4.12.2
+
+# Utilidades
+python-dotenv==1.0.0
+python-multipart==0.0.6
+
+# Logging y Debugging
+colorlog==6.7.0
+
+# Validación y Parsing
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# Fechas y Tiempo
+pytz==2023.3
+python-dateutil==2.8.2
+
+# Archivos y Sistema
+pathlib2==2.3.7
+
+# Opcional - para desarrollo
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Opcional - para deployment
+gunicorn==21.2.0
+supervisor==4.2.5
