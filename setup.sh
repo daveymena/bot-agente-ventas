@@ -1,54 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# ============================================================
+#  Instalación del agente de ventas (motor Python + puente Baileys)
+# ============================================================
+set -e
 
-# ========================================
-# SETUP AUTOMÁTICO DEL AGENTE DE VENTAS
-# ========================================
+cd "$(dirname "$0")"
 
-echo "🚀 Configurando Agente de Ventas Python..."
-echo "=" * 50
+echo "==> Verificando requisitos"
+python3 --version || { echo "Falta Python 3.10+"; exit 1; }
+node --version   || echo "⚠️  Falta Node.js 18+ (necesario para WhatsApp con Baileys)"
 
-# Verificar Python
-if ! command -v python3 &> /dev/null; then
-    echo "❌ Python 3 no encontrado. Instálalo primero."
-    exit 1
+echo "==> Entorno virtual de Python"
+if [ ! -d ".venv" ]; then
+  python3 -m venv .venv
+fi
+./.venv/bin/pip install --upgrade pip -q
+./.venv/bin/pip install -r requirements.txt -q
+
+echo "==> ¿Instalar proveedores de IA? (Gemini/OpenAI: opcional)"
+read -r -p "    Instalar IA generativa y transcripción de audios? [s/N] " respuesta
+if [[ "$respuesta" =~ ^[sSyY]$ ]]; then
+  ./.venv/bin/pip install -r requirements-ia.txt -q
+  echo "    ✓ IA instalada. Configura las API keys en .env"
 fi
 
-echo "✅ Python 3 encontrado"
+echo "==> Dependencias del puente de WhatsApp (Baileys)"
+if command -v npm >/dev/null 2>&1; then
+  (cd baileys-bridge && npm install --no-audit --no-fund)
+else
+  echo "    ⚠️  npm no está disponible: instala Node.js y luego corre 'cd baileys-bridge && npm install'"
+fi
 
-# Crear directorios necesarios
-echo "📁 Creando directorios..."
+echo "==> Configuración"
+if [ ! -f ".env" ]; then
+  cp .env.example .env
+  echo "    ✓ Creado .env (revísalo y ajusta lo que necesites)"
+fi
+if [ ! -f "config/negocio.json" ]; then
+  echo "    ⚠️  No hay config/negocio.json: copia un ejemplo de negocios/ejemplos/"
+fi
+
 mkdir -p logs temp
 
-# Instalar dependencias
-echo "📦 Instalando dependencias..."
-pip install -r requirements.txt
+cat <<'FIN'
 
-if [ $? -ne 0 ]; then
-    echo "❌ Error instalando dependencias"
-    exit 1
-fi
+============================================================
+  ¡Listo! Para arrancar todo:
 
-echo "✅ Dependencias instaladas"
+      source .venv/bin/activate
+      python iniciar.py
 
-# Verificar configuración
-echo "🔧 Verificando configuración..."
-if [ -f .env ]; then
-    echo "✅ Archivo .env encontrado"
-else
-    echo "⚠️  Archivo .env no encontrado. Usando configuración por defecto."
-    cp .env.example .env
-fi
-
-# Ejecutar prueba de configuración
-echo "🧪 Ejecutando prueba de configuración..."
-python3 test_config.py
-
-echo ""
-echo "🎉 ¡Configuración completada!"
-echo ""
-echo "📋 PRÓXIMOS PASOS:"
-echo "   1. Revisa la configuración en el archivo .env"
-echo "   2. Ejecuta: python3 main.py"
-echo "   3. Configura el webhook en Evolution API"
-echo ""
-echo "💡 Para más información, consulta el README.md"
+  - Escanea el QR para vincular WhatsApp (panel del puente)
+  - Prueba sin WhatsApp en:  http://localhost:8000/simulador
+  - Pruebas automáticas:     ./.venv/bin/python -m pytest tests/ -q
+============================================================
+FIN

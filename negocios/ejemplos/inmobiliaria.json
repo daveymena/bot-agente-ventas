@@ -1,0 +1,40 @@
+{
+  "_instrucciones": "Ejemplo para inmobiliarias, arriendos, venta de inmuebles y administración de propiedades.",
+  "negocio": {
+    "nombre": "Inmobiliaria Valle Raíz",
+    "tipo_negocio": "mixto",
+    "descripcion": "Arriendo y venta de apartamentos, casas y locales en Cali y el Valle.",
+    "ciudad": "Cali",
+    "direccion": "Cra 100 # 11-20, Oficina 301",
+    "telefono": "573008889900",
+    "moneda": "COP",
+    "horarios": [
+      { "dia": "lunes", "abre": "08:30", "cierra": "18:00" },
+      { "dia": "martes", "abre": "08:30", "cierra": "18:00" },
+      { "dia": "miercoles", "abre": "08:30", "cierra": "18:00" },
+      { "dia": "jueves", "abre": "08:30", "cierra": "18:00" },
+      { "dia": "viernes", "abre": "08:30", "cierra": "17:30" },
+      { "dia": "sabado", "abre": "09:00", "cierra": "13:00", "nota": "visitas programadas" },
+      { "dia": "domingo", "cerrado": true }
+    ],
+    "metodos_pago": ["Transferencia", "PSE", "Efectivo (en oficina)"],
+    "cobertura": "Cali, Jamundí, Palmira y Yumbo",
+    "tono": "serio, claro y concreto, sin exagerar promesas",
+    "mensaje_bienvenida": "¡Hola! 🏠 Bienvenido a *Inmobiliaria Valle Raíz*. ¿Buscas arrendar, comprar, vender o arrendar tu propiedad con nosotros?",
+    "politicas": ["Los arriendos requieren estudio de crédito y codeudor o seguro de arrendamiento.", "Las visitas se agendan con cita y acompañamiento de un asesor."],
+    "faqs": [
+      { "pregunta": "¿Qué piden para arrendar?", "respuesta": "Cédula, soportes de ingresos de los últimos 3 meses y codeudor con finca raíz o seguro de arrendamiento. Te acompañamos en todo el proceso 📝" },
+      { "pregunta": "¿Cobran por mostrar los inmuebles?", "respuesta": "No, las visitas son gratuitas 🙌 Solo se paga cuando firmas el contrato." },
+      { "pregunta": "¿Cuánto cobran de comisión?", "respuesta": "La comisión se acuerda según el tipo de inmueble y el servicio; te la informamos por escrito antes de publicar." }
+    ],
+    "catalogo": [
+      { "nombre": "Apartamento 2 alcobas en Tequendama", "tipo": "inmueble", "categoria": "Arriendos", "precio": 1900000, "precio_texto": "$1.900.000/mes + administración $250.000", "descripcion": "72 m², 2 alcobas, 2 baños, balcón, parqueadero y ascensor. Conjunto cerrado con piscina.", "atributos": { "Área": "72 m²", "Alcobas": "2", "Baños": "2", "Parqueadero": "1", "Administración": "$250.000" }, "etiquetas": ["apartamento", "arriendo", "tequendama", "2 alcobas"], "disponibilidad": "disponible", "modalidad": "visita con asesor", "destacado": true, "imagen": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800" },
+      { "nombre": "Casa 3 alcobas en Ciudad Jardín", "tipo": "inmueble", "categoria": "Ventas", "precio": 620000000, "descripcion": "170 m², 3 alcobas, patio, garaje para 2 vehículos, cocina integral. Zona residencial tranquila.", "atributos": { "Área": "170 m²", "Alcobas": "3", "Baños": "2", "Garaje": "2" }, "etiquetas": ["casa", "venta", "ciudad jardin", "3 alcobas"], "disponibilidad": "disponible", "destacado": true },
+      { "nombre": "Local comercial en el Centro", "tipo": "inmueble", "categoria": "Arriendos", "precio": 2600000, "precio_texto": "$2.600.000/mes", "descripcion": "55 m² con vitrina, mezzanine, baño y salida de gas. Alto flujo peatonal.", "atributos": { "Área": "55 m²", "Vitrina": "Sí", "Uso": "Comercial" }, "etiquetas": ["local", "comercial", "arriendo", "centro"], "disponibilidad": "disponible" },
+      { "nombre": "Apartaestudio amoblado en Granada", "tipo": "inmueble", "categoria": "Arriendos", "precio": 1350000, "precio_texto": "$1.350.000/mes (servicios incluidos)", "descripcion": "38 m², amoblado, cocina integral, ideal para una persona. Servicios públicos incluidos.", "atributos": { "Área": "38 m²", "Alcobas": "1", "Amoblado": "Sí" }, "etiquetas": ["apartaestudio", "amoblado", "granada", "arriendo"], "disponibilidad": "disponible" },
+      { "nombre": "Bodega 300 m² zona industrial", "tipo": "inmueble", "categoria": "Arriendos", "precio_texto": "Consultar según uso ($6.500.000 aprox. /mes)", "descripcion": "300 m², altura libre 6 m, patio de maniobras, oficina interna y energía trifásica.", "atributos": { "Área": "300 m²", "Altura": "6 m", "Energía": "Trifásica" }, "etiquetas": ["bodega", "industrial", "logistica"], "disponibilidad": "consultar" },
+      { "nombre": "Administración de propiedades (plan mensual)", "tipo": "servicio", "categoria": "Servicios", "precio_texto": "10% del canon mensual", "descripcion": "Conseguimos arrendatario, cobramos, atendemos mantenimientos y respondemos por el inmueble.", "incluye": ["Búsqueda de inquilino", "Cobro del canon", "Mantenimiento", "Informe mensual"], "etiquetas": ["administracion", "arrendar mi propiedad", "plan"], "disponibilidad": "disponible" },
+      { "nombre": "Avalúo comercial de inmueble", "tipo": "servicio", "categoria": "Servicios", "precio": 250000, "duracion": "3 días hábiles", "descripcion": "Informe de valor comercial con comparables del sector.", "etiquetas": ["avaluo", "valor", "informe"], "disponibilidad": "por_agenda" }
+    ]
+  }
+}

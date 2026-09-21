@@ -1,375 +1,346 @@
-# Agente de Ventas Profesional para WhatsApp
+# 🤖 Agente de Ventas para WhatsApp · cualquier negocio (productos y servicios)
 
-Un agente de ventas automatizado desarrollado en Python que utiliza inteligencia artificial para responder consultas de clientes sobre productos tecnológicos a través de WhatsApp.
+Agente que atiende WhatsApp automáticamente: entiende lo que pide el cliente,
+busca en **tu catálogo real** (productos, servicios, planes o alquileres) y
+responde con precios, disponibilidad, horarios y el paso siguiente (agendar,
+separar, cotizar). Sin Evolution API, sin ngrok y sin webhooks públicos:
+WhatsApp se conecta con **Baileys**.
 
-## 🚀 Características
+Diseñado para ser **multi-rubro**: una tienda, un restaurante, una barbería, un
+taller, un consultorio, una inmobiliaria o una agencia de servicios usan el
+**mismo código** y solo cambian `config/negocio.json`.
 
-- **Procesamiento de Mensajes**: Maneja mensajes de texto y audio (con transcripción automática)
-- **Scraping Inteligente**: Extrae información de productos de múltiples tiendas automáticamente
-- **IA Avanzada**: Utiliza Google Gemini o OpenAI GPT para generar respuestas naturales
-- **Memoria de Conversación**: Mantiene contexto de conversaciones anteriores
-- **Respuestas Multimedia**: Envía texto e imágenes de productos
-- **API RESTful**: Interfaz web completa para integración
-- **Configuración Flexible**: Variables de entorno para fácil despliegue
+---
 
-## 📋 Requisitos
+## 🧠 Cómo funciona
 
-- Python 3.8+
-- Conexión a internet
-- Cuentas API de servicios externos (opcionales)
-
-## 🛠️ Instalación
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone <url-del-repositorio>
-   cd agente-ventas-python
-   ```
-
-2. **Crear entorno virtual**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   # o
-   venv\\Scripts\\activate  # Windows
-   ```
-
-3. **Instalar dependencias**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configurar variables de entorno**
-   ```bash
-   cp .env.example .env
-   # Editar .env con tus configuraciones
-   ```
-
-## ⚙️ Configuración
-
-### Variables de Entorno Obligatorias
-
-```env
-# WhatsApp (Evolution API)
-WHATSAPP_SERVER_URL=https://tu-evolution-api.com
-WHATSAPP_INSTANCE_NAME=tu_instancia
-WHATSAPP_API_KEY=tu_api_key
-
-# IA (al menos una opción)
-GOOGLE_GEMINI_API_KEY=tu_google_gemini_api_key
-# o
-OPENAI_API_KEY=tu_openai_api_key
-# o configurar Ollama (ver sección Ollama)
+```
+   WhatsApp
+       ↕  (Baileys: escucha y envía)
+┌──────────────────────┐        HTTP local       ┌───────────────────────────┐
+│  baileys-bridge/     │  ───────────────────►   │  Motor Python (main.py)   │
+│  Node + Baileys      │   POST /mensaje         │  · intención del mensaje  │
+│  · QR de vinculación │   ◄───────────────────  │  · búsqueda en el catálogo │
+│  · envía las         │   plan de acciones      │  · respuesta con datos    │
+│    respuestas        │   (texto, imagen, ...)  │    reales del negocio     │
+└──────────────────────┘                         └───────────────────────────┘
+        ▲                                                     ▲
+        │ panel web con QR                                    │ simulador web
+        └── http://localhost:3001                           └── /simulador
 ```
 
-### Variables de Entorno Opcionales
+El motor **no sabe nada de WhatsApp**: recibe un mensaje normalizado y devuelve
+una lista de acciones (`texto`, `imagen`, `notificar` al dueño, `presencia`…).
+Así el mismo cerebro sirve para el puente de Baileys, para el simulador web o
+para cualquier integración futura. Y **nunca inventa**: si un dato no está en el
+catálogo o en el perfil del negocio, no aparece en la respuesta.
 
-```env
-# Logging
-LOG_LEVEL=INFO
-LOG_FILE=logs/agente_ventas.log
+---
 
-# Sistema
-TEMP_DIR=temp
-LOGS_DIR=logs
-MAX_RESPONSE_LENGTH=500
-CONTEXT_WINDOW_LENGTH=10
-DELAY_BETWEEN_MESSAGES=2.0
-```
+## 🚀 Arranque rápido
 
-## 🚀 Uso
-
-### Iniciar el Agente
+Requisitos: **Python 3.10+** y **Node.js 18+**.
 
 ```bash
-python main.py
+# 1) instalación (crea .venv, instala dependencias y crea .env)
+./setup.sh
+
+# 2) arranca motor + puente de WhatsApp
+source .venv/bin/activate
+python iniciar.py
 ```
 
-El servidor se iniciará en `http://localhost:8000`
+Luego:
 
-### Endpoints Disponibles
+| Qué | Dónde |
+|---|---|
+| Vincular WhatsApp (QR) | `http://localhost:3001` → escanea con WhatsApp › Dispositivos vinculados |
+| Probar sin WhatsApp | `http://localhost:8000/simulador` |
+| Estado del agente | `http://localhost:8000/estado` |
 
-- `GET /` - Información básica del agente
-- `GET /health` - Verificación de salud
-- `POST /webhook` - Procesar mensajes de WhatsApp
-- `POST /refresh-products` - Actualizar caché de productos
-- `GET /products` - Obtener lista de productos
+¿Solo quieres probar el motor sin WhatsApp? `python iniciar.py --solo-api`
 
-### Formato del Webhook
+---
 
-El endpoint `/webhook` espera un payload JSON con la siguiente estructura:
+## 🏪 Configurar tu negocio (esto es todo lo que hay que editar)
 
-```json
+Todo vive en **`config/negocio.json`**: identidad, horarios, pagos, envíos,
+políticas, preguntas frecuentes y el catálogo. El agente lo **recarga solo** al
+guardar el archivo, sin reiniciar.
+
+```jsonc
 {
-  "body": {
-    "URL del servidor": "https://tu-servidor.com",
-    "nombreInstancia": "tu_instancia",
-    "clave API": "tu_api_key",
-    "data": {
-      "id": "mensaje_id",
-      "remoteJid": "1234567890@c.us",
-      "message": {
-        "conversation": "Mensaje del cliente"
-      },
-      "pushName": "Nombre del Cliente"
-    }
+  "negocio": {
+    "nombre": "Mi Negocio",
+    "tipo_negocio": "mixto",              // productos | servicios | mixto
+    "ciudad": "Cali", "direccion": "…", "telefono": "573001112233",
+    "horarios": [ { "dia": "lunes", "abre": "08:00", "cierra": "18:00" },
+                  { "dia": "domingo", "cerrado": true } ],
+    "metodos_pago": ["Efectivo", "Nequi", "Tarjeta"],
+    "envio": "Envío gratis en la ciudad desde $150.000",
+    "cobertura": "Cali, Palmira, Yumbo",
+    "politicas": ["Garantía de 12 meses…"],
+    "promociones": ["10% pagando en efectivo"],
+    "faqs": [ { "pregunta": "¿Dan factura?", "respuesta": "Sí, electrónica 🧾" } ],
+
+    "catalogo": [
+      { "nombre": "Portátil Lenovo IdeaPad 3", "tipo": "producto",
+        "categoria": "Computadores", "precio": 2150000, "stock": 6,
+        "descripcion": "Core i5, 8GB RAM, SSD 512GB",
+        "etiquetas": ["portátil", "laptop", "oficina"], "destacado": true,
+        "imagen": "https://…/foto.jpg" },
+
+      { "nombre": "Mantenimiento preventivo", "tipo": "servicio",
+        "categoria": "Servicio técnico", "precio": 90000,
+        "duracion": "1 a 2 horas", "modalidad": "a domicilio o en el local",
+        "incluye": ["Limpieza", "Pasta térmica"], "disponibilidad": "por_agenda",
+        "agenda": "Citas de lunes a sábado" }
+    ]
   }
 }
 ```
 
-## 🏗️ Arquitectura
+**Claves del catálogo** (funcionan igual para productos y servicios):
 
-```
-agente_ventas_python/
-├── config/
-│   └── settings.py          # Configuración centralizada
-├── core/
-│   └── sales_agent.py       # Agente principal
-├── models/
-│   ├── message.py           # Modelo de mensaje
-│   └── product.py           # Modelo de producto
-├── services/
-│   ├── whatsapp_service.py  # Servicio de WhatsApp
-│   ├── scraping_service.py  # Servicio de scraping
-│   ├── ai_service.py        # Servicio de IA
-│   ├── audio_service.py     # Servicio de audio
-│   └── message_processor.py # Procesador de mensajes
-├── utils/
-│   └── helpers.py           # Utilidades auxiliares
-├── main.py                  # Punto de entrada
-├── .env.example            # Ejemplo de configuración
-└── README.md               # Esta documentación
-```
+| Campo | Para qué sirve |
+|---|---|
+| `tipo` | `producto`, `servicio`, `plan`, `inmueble`… cambia el tono y los emojis |
+| `precio` | Número (permite filtrar por presupuesto). Si es variable usa `precio_texto` |
+| `precio_texto` | "Desde $120.000 según el modelo", "10% del canon" |
+| `disponibilidad` | `disponible`, `agotado`, `bajo_pedido`, `por_agenda`, `preventa`, `consultar` |
+| `duracion`, `modalidad`, `incluye`, `requisitos`, `agenda` | Pensados para servicios y citas |
+| `garantia`, `entrega`, `promocion` | Se muestran en la ficha del ítem |
+| `etiquetas`, `sinonimos` | Mejoran la búsqueda ("portátil", "notebook", "cortada") |
+| `imagen` | El agente la envía junto con la ficha del ítem |
+| `atributos` | Ficha técnica libre: `{"Procesador": "Core i5"}` |
 
-## 🔧 Servicios
+### Negocios de ejemplo listos para copiar
 
-### WhatsApp Service
-- Envío de mensajes de texto e imágenes
-- Descarga de archivos multimedia
-- Validación de conexión
-- **Compatible con Evolution API** (igual que n8n)
-
-### Scraping Service
-- Extracción de productos de múltiples tiendas
-- Búsqueda inteligente de productos
-- Caché de productos
-
-### AI Service
-- Generación de respuestas con IA
-- Memoria de conversación
-- Soporte para Google Gemini, OpenAI y Ollama (local)
-- Priorización automática: Gemini → OpenAI → Ollama
-
-### Audio Service
-- Transcripción de mensajes de voz
-- Soporte para múltiples formatos
-- Validación de archivos de audio
-
-### Message Processor
-- Normalización de datos
-- Validación de mensajes
-- Extracción de palabras clave
-
-## 📝 Ejemplo de Uso
-
-### Mensaje de Cliente
-```
-"Hola, estoy buscando un iPhone 13 Pro Max"
-```
-
-### Respuesta del Agente
-```
-💻 ¡Hola! Claro, tenemos el iPhone 13 Pro Max disponible 📱
-Características principales:
-• Pantalla Super Retina XDR de 6.7"
-• Chip A15 Bionic
-• Cámara Pro de 12MP
-• Almacenamiento desde 128GB
-
-¿Te gustaría conocer precios y disponibilidad? 🛒
-```
-
-## 🔍 Monitoreo y Logs
-
-El agente genera logs detallados en el archivo especificado en `LOG_FILE`. Los logs incluyen:
-
-- Procesamiento de mensajes
-- Errores y excepciones
-- Actualizaciones de caché
-- Interacciones con servicios externos
-
-## 🛡️ Manejo de Errores
-
-El agente incluye manejo robusto de errores:
-
-- Validación de datos de entrada
-- Reintentos automáticos para servicios externos
-- Fallback para respuestas cuando la IA no está disponible
-- Logging detallado de errores
-
-## 🚀 Despliegue
-
-### Producción
-
-1. **Configurar servidor web** (Nginx, Apache, etc.)
-2. **Configurar variables de entorno**
-3. **Usar un proceso manager** (PM2, Supervisor, etc.)
-4. **Configurar SSL** (recomendado)
-
-### Docker (Futuro)
-
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY . .
-RUN pip install -r requirements.txt
-EXPOSE 8000
-CMD ["python", "main.py"]
-```
-
-## 🤝 Contribuir
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo `LICENSE` para más detalles.
-
-## 🆘 Soporte
-
-Para soporte técnico o preguntas:
-
-- Crear un issue en GitHub
-- Revisar la documentación
-- Verificar los logs del sistema
-
-## 🦙 Configuración de Ollama (Local)
-
-Para usar modelos de IA locales con Ollama:
-
-1. **Instalar Ollama**
-   ```bash
-   # En Linux/Mac
-   curl -fsSL https://ollama.ai/install.sh | sh
-
-   # En Windows
-   # Descargar desde https://ollama.ai/download
-   ```
-
-2. **Descargar un modelo**
-   ```bash
-   ollama pull llama2
-   ollama pull mistral
-   ollama pull codellama
-   ```
-
-3. **Configurar variables de entorno**
-   ```env
-   OLLAMA_BASE_URL=http://localhost:11434
-   OLLAMA_MODEL=llama2
-   ```
-
-4. **Verificar funcionamiento**
-   ```bash
-   curl http://localhost:11434/api/tags
-   ```
-
-### Modelos Recomendados
-
-- `llama2:13b` - Bueno para chat general
-- `mistral:7b` - Rápido y eficiente
-- `codellama:13b` - Especializado en código
-- `vicuna:13b` - Similar a ChatGPT
-
-## 📚 Guías y Documentación
-
-- [Guía de Configuración Evolution API](GUIA_EVOLUTION_API.md) - Configuración paso a paso del webhook
-- [Script de Prueba de Configuración](test_config.py) - Verificar que todo esté configurado
-- [Script de Prueba de Webhook](test_webhook.py) - Probar el webhook manualmente
-
-## 🚀 Inicio Rápido
-
-### **Opción 1: Script de Inicio Interactivo (Recomendado)**
 ```bash
-python iniciar.py
+cp negocios/ejemplos/restaurante.json config/negocio.json
 ```
-Menú interactivo con todas las opciones disponibles.
 
-### **Opción 2: Sistema Completo**
-```bash
-python run_complete_system.py
-```
-Ejecuta todos los componentes sincronizados.
+| Ejemplo | Rubro |
+|---|---|
+| `restaurante.json` | Platos, bebidas, catering por evento |
+| `barberia.json` | Cortes, barba, productos de cuidado |
+| `taller-automotriz.json` | Mantenimiento, llantas, revisión precompra |
+| `consultorio-dental.json` | Consultas, ortodoncia, urgencias |
+| `inmobiliaria.json` | Arriendos, ventas, administración de propiedades |
+| `tienda-tecnologia.json` | Equipos, accesorios, servicios técnicos |
+| `agencia-servicios.json` | Contabilidad, marca, marketing, jurídica |
 
-### **Opción 3: Bot con Evolution**
-```bash
-python start_bot.py
-```
-Bot optimizado para trabajar con Evolution API.
-
-### **Opción 4: Solo Servidor Webhook**
-```bash
-python main.py
-```
-Servidor básico para recibir webhooks.
-
-## 🌐 Opciones de Despliegue
-
-### **¡NO NECESITAS NGROK!** Elige una opción profesional:
-
-| Opción | Plataforma | Costo | URL | Dificultad |
-|--------|------------|-------|-----|------------|
-| 🏆 **Cloudflare Tunnel** | Local + Tunnel | Gratis | Permanente | Media |
-| ☁️ **Vercel** | Hosting | Gratis | Permanente | Baja |
-| 🚂 **Railway** | Hosting | Gratis | Permanente | Baja |
-| 📦 **VPS Gratuito** | Servidor | Gratis | Permanente | Alta |
-| 🔗 **ngrok** | Tunnel | Gratis | Temporal | Baja |
-
-### **🚀 Despliegue Rápido:**
-```bash
-python deploy_options.py
-```
-Elige la mejor opción para tu caso.
-
-### **🏆 Recomendado para Bot 24/7:**
-```bash
-python setup_24_7_bot.py
-```
-Configuración profesional con Docker + Cloudflare Tunnel para máxima disponibilidad.
-
-## 🔧 Scripts de Utilidad
-
-### Prueba de Configuración
-```bash
-python test_config.py
-```
-Verifica que todas las credenciales estén configuradas correctamente.
-
-### Prueba de Webhook
-```bash
-python test_webhook.py
-```
-Envía un mensaje de prueba al webhook para verificar funcionamiento.
-
-### Setup Automático
-```bash
-./setup.sh
-```
-Instalación y configuración automática del proyecto.
-
-## 🔄 Roadmap
-
-- [ ] Interfaz web de administración
-- [ ] Soporte para más tiendas
-- [ ] Análisis de sentimientos
-- [ ] Integración con CRM
-- [ ] Dashboard de métricas
-- [ ] Soporte multi-idioma
+También aceptan claves en inglés (`title`, `price`, `duration`…) y campos libres
+en `atributos`, así que puedes reutilizar el catálogo que ya tengas.
 
 ---
 
-**Desarrollado con ❤️ para automatizar ventas y mejorar la experiencia del cliente**
+## 💬 Qué entiende y cómo responde
+
+| El cliente dice… | El agente responde con… |
+|---|---|
+| "hola" / "buenas" | Bienvenida del negocio + menú de categorías reales + destacados. Si está cerrado, lo dice |
+| "¿qué venden / qué servicios ofrecen?" | Categorías con ejemplos y precios reales |
+| "¿cuánto vale el portátil Lenovo?" | Ficha completa del ítem + alternativas + cierre para comprar |
+| "busco un ipone 13" (con typo) | El iPhone real (coincidencia aproximada) |
+| "¿tienen impresora disponible?" | Disponibilidad real: "quedan 6" o "está agotado por ahora" |
+| "quiero agendar mantenimiento" | Detalle del servicio (duración, modalidad, qué incluye) + datos para agendar + **aviso al equipo** |
+| "quiero cotizar redes para mi oficina" | Pide los datos necesarios y **avisa a un asesor** |
+| "tengo 300 mil, ¿qué me alcanza?" | Solo opciones dentro del presupuesto |
+| "eso está muy caro" | Alternativas más económicas reales + opciones de pago + aviso al equipo |
+| "¿hacen envíos a Bogotá?" | Valida la cobertura: si no llega, lo dice y ofrece confirmarlo |
+| "¿los domingos atienden?" / "¿dónde quedan?" | Horario (con si está abierto ahora) / dirección y mapa |
+| "¿aceptan tarjeta?" / "¿tienen factura?" | Respuesta desde `metodos_pago` o tus `faqs` |
+| "quiero hablar con una persona" / queja | Mensaje empático + **aviso inmediato al dueño** por WhatsApp |
+| Nota de voz | La transcribe (si configuras OpenAI) y responde igual |
+
+Los avisos al dueño (citas, cotizaciones, quejas, escalados) llegan al número de
+`HUMAN_ESCALATION_NUMBER` (o `numero_escalado` del negocio).
+
+---
+
+## 🔌 IA: opcional, y nunca inventa
+
+El agente **funciona sin IA** con el motor de respuestas propio (catálogo +
+plantillas por intención). Si configuras un proveedor, la IA se usa solo para
+**redactar mejor** la misma respuesta, con instrucciones estrictas de usar
+únicamente los datos verificados:
+
+```bash
+./.venv/bin/pip install -r requirements-ia.txt   # Gemini y/o OpenAI
+```
+
+```env
+GOOGLE_GEMINI_API_KEY=...     # prioridad 1
+OPENAI_API_KEY=...            # prioridad 2 (también transcribe audios con Whisper)
+OLLAMA_BASE_URL=...           # prioridad 3 (modelos locales, sin costo)
+```
+
+Prioridad: `gemini → openai → ollama → motor propio`. Puedes forzarla con
+`AI_PROVIDER=gemini|openai|ollama|rules`.
+
+---
+
+## 🌐 API
+
+| Método | Ruta | Para qué |
+|---|---|---|
+| `POST` | `/mensaje` | Recibe un mensaje y devuelve el plan de acciones (lo usa el puente y el simulador) |
+| `POST` | `/webhook` | Misma lógica, compatible con payloads antiguos (Evolution/n8n) |
+| `POST` | `/evento-whatsapp` | El puente reporta conexión, desconexión o QR pendiente |
+| `GET` | `/estado` | Negocio, catálogo, IA, memoria y métricas |
+| `GET` | `/negocio` | Perfil del negocio cargado |
+| `GET` | `/catalogo?q=&categoria=&tipo=` | Buscar en el catálogo |
+| `POST` | `/catalogo/recargar` | Releer `config/negocio.json` |
+| `POST` | `/catalogo/importar-web` | Importar ítems desde las webs del negocio (`fuentes_scraping`) |
+| `GET` | `/simulador` | Interfaz de chat para probar sin WhatsApp |
+| `GET` | `/health` | Salud del servicio |
+
+Ejemplo:
+
+```bash
+curl -X POST http://localhost:8000/mensaje -H 'Content-Type: application/json' -d '{
+  "mensaje": {"id":"1","chat_id":"573001112233@s.whatsapp.net","texto":"cuanto vale el corte","tipo":"texto","nombre":"Ana"}
+}'
+```
+
+Respuesta:
+
+```json
+{
+  "ok": true, "ignorado": false, "intenciones": ["consulta_item"],
+  "acciones": [
+    {"tipo": "leer"},
+    {"tipo": "presencia", "estado": "composing", "ms": 700},
+    {"tipo": "texto", "texto": "📦 *Corte de cabello clásico*\n💰 $25.000…"},
+    {"tipo": "imagen", "url": "https://…", "caption": "…"}
+  ],
+  "debug": {"negocio": "Barbería El Rey", "ia": "motor-propio", "escalar": false}
+}
+```
+
+---
+
+## ✅ Pruebas
+
+```bash
+./.venv/bin/python -m pytest tests/ -q
+```
+
+53 pruebas cubren: utilidades de texto y precios, ranking del catálogo con dos
+rubros distintos, tipologías de negocio, y el flujo completo del agente
+(respuestas con datos reales, duplicados, grupos, presupuestos, escalado a
+humano, audios sin transcribir y mensajes raros).
+
+---
+
+## 🕓 24/7
+
+**Opción recomendada (Docker):**
+
+```bash
+cp .env.example .env      # edita BRIDGE_TOKEN, HUMAN_ESCALATION_NUMBER…
+docker compose up -d --build
+docker compose logs -f puente    # aquí ves el QR la primera vez
+```
+
+**Opción VPS / servidor propio (systemd):** dos servicios, el motor y el puente.
+
+```ini
+# /etc/systemd/system/agente-ventas.service
+[Unit]
+Description=Agente de ventas (motor)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/bot-agente-ventas
+ExecStart=/opt/bot-agente-ventas/.venv/bin/python main.py
+Restart=always
+EnvironmentFile=/opt/bot-agente-ventas/.env
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```ini
+# /etc/systemd/system/agente-whatsapp.service
+[Unit]
+Description=Puente WhatsApp (Baileys)
+After=network.target agente-ventas.service
+
+[Service]
+WorkingDirectory=/opt/bot-agente-ventas/baileys-bridge
+ExecStart=/usr/bin/node index.js
+Restart=always
+EnvironmentFile=/opt/bot-agente-ventas/.env
+
+[Install]
+WantedBy=multi-user.target
+```
+
+> 💡 El QR se escanea **una sola vez**: la sesión queda en
+> `baileys-bridge/auth/` (o en el volumen `sesion_whatsapp` con Docker). Ese
+> directorio es una credencial: no lo subas al repositorio.
+
+---
+
+## 🔐 Seguridad
+
+- `.env` y `baileys-bridge/auth/` están en `.gitignore`: nunca los subas.
+- Define `BRIDGE_TOKEN` y `WEBHOOK_TOKEN` en producción: el puente autentica
+  contra el motor y el motor exige el token en `/mensaje`.
+- **Rota las credenciales que quedaron expuestas en el historial del
+  repositorio** (URL de Evolution API, API key de WhatsApp y la API key de
+  Gemini de los documentos antiguos): considera esas claves comprometidas.
+- Si el WhatsApp se desvincula, vuelve a escanear el QR en el panel del puente.
+
+---
+
+## 📁 Estructura
+
+```
+bot-agente-ventas/
+├── baileys-bridge/          # Puente WhatsApp (Node + Baileys)
+│   ├── index.js             # conexión, QR, escucha de mensajes
+│   └── src/                 # config, cliente del agente, envío, panel web
+├── config/
+│   ├── business.py          # perfil del negocio (horarios, cobertura…)
+│   ├── negocio.json         # ⬅️ TU negocio y tu catálogo
+│   └── settings.py          # configuración técnica (env)
+├── core/
+│   ├── sales_agent.py       # orquesta intención → catálogo → respuesta → acciones
+│   └── memoria.py           # contexto por conversación
+├── models/
+│   ├── catalog.py           # producto/servicio (mismo modelo para todo rubro)
+│   └── message.py           # normalización de mensajes entrantes
+├── services/
+│   ├── catalog_service.py   # búsqueda y ranking en el catálogo
+│   ├── intent_service.py    # qué quiere el cliente
+│   ├── response_builder.py  # plantillas de respuesta por intención
+│   ├── ai_service.py        # IA opcional (redacción con datos verificados)
+│   ├── audio_service.py     # transcripción de notas de voz
+│   └── scraping_service.py  # importar catálogo desde la web (opcional)
+├── negocios/ejemplos/       # 7 negocios listos para copiar
+├── web/simulador.html       # chat de pruebas
+├── tests/                   # 53 pruebas
+├── main.py                  # API + simulador
+├── iniciar.py               # arranca motor + puente
+└── docker-compose.yml       # despliegue 24/7
+```
+
+---
+
+## 🆘 Problemas comunes
+
+| Síntoma | Solución |
+|---|---|
+| No aparece el QR | Revisa `docker compose logs -f puente` o la consola de `iniciar.py`; abre `http://localhost:3001` |
+| El bot no contesta | Mira `/estado` → `metricas` y el log. Si `whatsapp` está desconectado, vuelve a escanear el QR |
+| Responde cualquier cosa | Completa `etiquetas`/`sinonimos` del ítem y ajusta `MATCH_THRESHOLD` (más alto = más estricto) |
+| Dice "no tengo registrado X" | Que el ítem exista en `config/negocio.json` con `disponibilidad` correcta |
+| Los avisos no llegan al dueño | Define `HUMAN_ESCALATION_NUMBER` con indicativo de país (ej: `573001112233`) |
+| No transcribe audios | Instala `requirements-ia.txt` y configura `OPENAI_API_KEY` |
+
+---
+
+Hecho para vender y atender mejor, sin depender de plataformas externas. 💬

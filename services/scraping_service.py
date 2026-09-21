@@ -1,238 +1,219 @@
 """
-Servicio para hacer scraping de productos de las tiendas
-"""
-import asyncio
-import aiohttp
-import logging
-from typing import List, Dict, Any, Optional
-from bs4 import BeautifulSoup
+Importación del catálogo desde la web del negocio (OPCIONAL).
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+El agente funciona sin esto: el catálogo normalmente vive en config/negocio.json.
+Si el negocio ya tiene su catálogo publicado en una web, se pueden declarar
+fuentes en el JSON (`fuentes_scraping`) y refrescar la lista de ítems con:
+
+    POST /catalogo/importar-web
+
+Cada fuente se describe así (sin programar nada específico de un rubro):
+
+    {
+      "nombre": "MegaComputer",
+      "url": "https://megacomputer.com.co/",
+      "selector": "h2, h3, .product-title, .producto h3",   // opcional
+      "paginas": 1,                                          // opcional
+      "tipo": "producto"                                     // o "servicio"
+    }
+
+Solo se importan nombres (y precio si logra detectarse en la tarjeta del
+producto). Es a propósito conservador: preferimos no inventar precios.
+"""
+from __future__ import annotations
+
+import asyncio
+import logging
+import re
+from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin, urlparse
 
 from config.settings import settings
-from models.product import Product
+from models.catalog import CatalogoItem
 
 logger = logging.getLogger(__name__)
 
+try:
+    import aiohttp
+except Exception:  # pragma: no cover
+    aiohttp = None  # type: ignore
+
+try:
+    from bs4 import BeautifulSoup
+    _TIENE_BS4 = True
+except Exception:  # pragma: no cover
+    BeautifulSoup = None  # type: ignore
+    _TIENE_BS4 = False
+
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/122.0 Safari/537.36"
+)
+
+# Palabras de navegación que NO son productos
+RUIDO = {
+    "inicio", "home", "contacto", "nosotros", "servicios", "productos", "categorias",
+    "categorías", "blog", "carrito", "mi cuenta", "buscar", "menu", "menú", "ofertas",
+    "quienes somos", "preguntas frecuentes", "politica", "política", "terminos",
+    "términos", "envios", "envíos", "siguenos", "síguenos",
+}
+
+# Precio tipo $45.000 / 45.000 / $45,000.00 / USD 45
+PRECIO_RE = re.compile(
+    r"(?:US\$|USD|\$|COP|MXN|ARS|CLP|PEN)\s?([\d][\d.,]{2,})|([\d][\d.,]{3,})\s?(?:COP|USD|pesos)",
+    re.IGNORECASE,
+)
+
+
+def _limpiar(texto: str) -> str:
+    return re.sub(r"\s+", " ", (texto or "")).strip()
+
+
+def _precio_de(texto: str) -> Optional[float]:
+    coincidencia = PRECIO_RE.search(texto or "")
+    if not coincidencia:
+        return None
+    crudo = coincidencia.group(1) or coincidencia.group(2) or ""
+    from utils.texto import parsear_numero
+
+    valor = parsear_numero(crudo)
+    return valor if valor and valor > 0 else None
+
+
+def _es_producto(nombre: str) -> bool:
+    if not nombre:
+        return False
+    letras = re.sub(r"[^A-Za-zÁÉÍÓÚÑáéíóúñ]", "", nombre)
+    if len(letras) < 3:
+        return False
+    if nombre.strip().lower() in RUIDO:
+        return False
+    if len(nombre) > 160:
+        return False
+    return True
+
+
 class ScrapingService:
-    """Servicio para hacer scraping de sitios web"""
+    """Lee las fuentes declaradas por el negocio y devuelve ítems de catálogo."""
 
-    def __init__(self):
-        self.megapack_url = settings.MEGAPACK_URL
-        self.megacomputer_url = settings.MEGACOMPUTER_URL
-        self.session: Optional[aiohttp.ClientSession] = None
+    def __init__(self) -> None:
+        self.timeout = settings.SCRAPE_TIMEOUT
+        self.session: Optional["aiohttp.ClientSession"] = None
 
-    async def __aenter__(self):
-        """Inicializar sesión HTTP"""
-        self.session = aiohttp.ClientSession()
-        return self
+    @property
+    def disponible(self) -> bool:
+        return aiohttp is not None and _TIENE_BS4
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Cerrar sesión HTTP"""
-        if self.session:
-            await self.session.close()
-
-    async def scrape_megapack(self) -> List[Product]:
-        """
-        Hacer scraping de productos de MegaPack
-
-        Returns:
-            List[Product]: Lista de productos encontrados
-        """
-        return await self._scrape_website(self.megapack_url, "MegaPack")
-
-    async def scrape_megacomputer(self) -> List[Product]:
-        """
-        Hacer scraping de productos de MegaComputer
-
-        Returns:
-            List[Product]: Lista de productos encontrados
-        """
-        return await self._scrape_website(self.megacomputer_url, "MegaComputer")
-
-    async def scrape_all_stores(self) -> Dict[str, List[Product]]:
-        """
-        Hacer scraping de todas las tiendas
-
-        Returns:
-            Dict[str, List[Product]]: Diccionario con productos por tienda
-        """
-        if not self.session:
-            await self.__aenter__()
-
-        try:
-            # Hacer scraping en paralelo
-            megapack_task = asyncio.create_task(self.scrape_megapack())
-            megacomputer_task = asyncio.create_task(self.scrape_megacomputer())
-
-            megapack_products, megacomputer_products = await asyncio.gather(
-                megapack_task, megacomputer_task, return_exceptions=True
+    async def _sesion(self) -> "aiohttp.ClientSession":
+        if self.session is None or self.session.closed:
+            self.session = aiohttp.ClientSession(
+                headers={"User-Agent": USER_AGENT, "Accept-Language": "es-CO,es;q=0.9"}
             )
+        return self.session
 
-            # Manejar excepciones
-            if isinstance(megapack_products, Exception):
-                logger.error(f"Error scraping MegaPack: {str(megapack_products)}")
-                megapack_products = []
+    async def cerrar(self) -> None:
+        if self.session and not self.session.closed:
+            await self.session.close()
+        self.session = None
 
-            if isinstance(megacomputer_products, Exception):
-                logger.error(f"Error scraping MegaComputer: {str(megacomputer_products)}")
-                megacomputer_products = []
+    # ------------------------------------------------------------------ lectura
+    async def _html(self, url: str) -> str:
+        sesion = await self._sesion()
+        async with sesion.get(url, timeout=self.timeout) as respuesta:
+            if respuesta.status != 200:
+                logger.warning("La fuente %s respondió %s", url, respuesta.status)
+                return ""
+            return await respuesta.text(errors="ignore")
 
-            return {
-                "MegaPack": megapack_products,
-                "MegaComputer": megacomputer_products
-            }
+    def _extraer(self, html: str, fuente: Dict[str, Any]) -> List[CatalogoItem]:
+        sopa = BeautifulSoup(html, "html.parser")
+        selector = fuente.get("selector") or fuente.get("selectores")
+        if selector:
+            nodos = sopa.select(selector)
+        else:
+            # sin selector: títulos de producto típicos
+            nodos = sopa.select("h1, h2, h3, .product-title, .producto, [class*=product] h2")
 
-        except Exception as e:
-            logger.error(f"Error en scraping general: {str(e)}")
-            return {"MegaPack": [], "MegaComputer": []}
+        nombre_fuente = fuente.get("nombre") or urlparse(fuente.get("url", "")).netloc
+        tipo = str(fuente.get("tipo") or "producto").lower()
+        items: List[CatalogoItem] = []
+        vistos = set()
 
-    async def _scrape_website(self, url: str, store_name: str) -> List[Product]:
-        """
-        Hacer scraping de un sitio web específico
+        for nodo in nodos[:120]:
+            nombre = _limpiar(nodo.get_text(" "))
+            if not _es_producto(nombre):
+                continue
+            clave = nombre.lower()
+            if clave in vistos:
+                continue
+            vistos.add(clave)
 
-        Args:
-            url: URL del sitio web
-            store_name: Nombre de la tienda
+            # Buscamos el precio en la tarjeta contenedora (sin inventar nada)
+            contenedor = nodo.find_parent(class_=re.compile(r"product|card|item|producto", re.I)) or nodo
+            precio = _precio_de(contenedor.get_text(" ")) or _precio_de(nombre)
 
-        Returns:
-            List[Product]: Lista de productos encontrados
-        """
-        if not self.session:
-            await self.__aenter__()
+            enlace = ""
+            ancla = nodo if nodo.name == "a" else nodo.find("a")
+            if ancla is not None and ancla.get("href"):
+                enlace = urljoin(fuente.get("url", ""), ancla["href"])
 
-        try:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
+            imagen = None
+            img = contenedor.find("img") if hasattr(contenedor, "find") else None
+            if img is not None:
+                candidato = img.get("src") or img.get("data-src") or ""
+                if candidato and not candidato.startswith("data:"):
+                    imagen = urljoin(fuente.get("url", ""), candidato)
 
-            async with self.session.get(url, headers=headers, timeout=30) as response:
-                if response.status != 200:
-                    logger.error(f"Error HTTP {response.status} para {url}")
-                    return []
+            items.append(CatalogoItem(
+                nombre=nombre[:160],
+                tipo=tipo if tipo in {"producto", "servicio"} else "producto",
+                precio=precio,
+                precio_texto="" if precio else "Precio a consultar en tienda",
+                imagen=imagen,
+                url=enlace,
+                tienda=nombre_fuente,
+                fuente=f"scraping:{fuente.get('url','')}",
+                etiquetas=[nombre_fuente.lower()] if nombre_fuente else [],
+            ))
+        logger.info("Fuente %s: %s ítems importados", nombre_fuente, len(items))
+        return items
 
-                html = await response.text()
-                return self._extract_products_from_html(html, store_name)
+    async def importar_fuentes(self, fuentes: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Importa todas las fuentes declaradas por el negocio en paralelo."""
+        if not fuentes:
+            return {"ok": False, "motivo": "el negocio no tiene 'fuentes_scraping' configuradas", "items": []}
+        if not self.disponible:
+            return {"ok": False, "motivo": "faltan dependencias (aiohttp/beautifulsoup4)", "items": []}
 
-        except asyncio.TimeoutError:
-            logger.error(f"Timeout scraping {url}")
+        tareas = [self._leer_fuente(f) for f in fuentes]
+        resultados = await asyncio.gather(*tareas, return_exceptions=True)
+
+        items: List[CatalogoItem] = []
+        detalle = []
+        for fuente, resultado in zip(fuentes, resultados):
+            nombre = fuente.get("nombre") or fuente.get("url", "?")
+            if isinstance(resultado, Exception):
+                detalle.append({"fuente": nombre, "error": str(resultado), "items": 0})
+                continue
+            items.extend(resultado)
+            detalle.append({"fuente": nombre, "items": len(resultado), "url": fuente.get("url")})
+
+        return {"ok": True, "total": len(items), "detalle": detalle, "items": items}
+
+    async def _leer_fuente(self, fuente: Dict[str, Any]) -> List[CatalogoItem]:
+        url = fuente.get("url")
+        if not url:
             return []
-        except Exception as e:
-            logger.error(f"Error scraping {url}: {str(e)}")
+        html = await self._html(url)
+        if not html:
             return []
+        items = self._extraer(html, fuente)
 
-    def _extract_products_from_html(self, html: str, store_name: str) -> List[Product]:
-        """
-        Extraer productos desde HTML usando regex (método simple)
-
-        Args:
-            html: Contenido HTML
-            store_name: Nombre de la tienda
-
-        Returns:
-            List[Product]: Lista de productos encontrados
-        """
-        import re
-
-        productos = []
-
-        # Regex para encontrar títulos de productos (h1-h6)
-        # Busca patrones como <h1>Nombre del Producto</h1>
-        regex = r'<h[1-6][^>]*>([^<]{3,200})</h[1-6]>'
-        matches = re.finditer(regex, html, re.IGNORECASE | re.DOTALL)
-
-        for match in matches:
-            nombre = match.group(1).strip()
-
-            # Filtrar títulos que parezcan productos
-            if self._is_product_title(nombre):
-                productos.append(Product(
-                    nombre=nombre,
-                    tienda=store_name
-                ))
-
-        logger.info(f"Encontrados {len(productos)} productos en {store_name}")
-        return productos
-
-    def _is_product_title(self, title: str) -> bool:
-        """
-        Determinar si un título parece ser de un producto
-
-        Args:
-            title: Título a evaluar
-
-        Returns:
-            bool: True si parece un título de producto
-        """
-        if not title or len(title) < 3:
-            return False
-
-        # Palabras que indican que es un producto
-        product_keywords = [
-            'laptop', 'computador', 'pc', 'notebook', 'portátil',
-            'iphone', 'samsung', 'xiaomi', 'huawei', 'motorola',
-            'tablet', 'ipad', 'galaxy', 'pro', 'max', 'plus',
-            'ssd', 'hdd', 'ram', 'memoria', 'procesador', 'cpu',
-            'monitor', 'pantalla', 'teclado', 'mouse', 'auricular',
-            'cargador', 'batería', 'adaptador', 'cable', 'usb'
-        ]
-
-        title_lower = title.lower()
-
-        # Verificar si contiene palabras clave de productos
-        has_product_keyword = any(keyword in title_lower for keyword in product_keywords)
-
-        # Verificar que no sea un título de navegación o footer
-        navigation_words = ['inicio', 'contacto', 'nosotros', 'servicios', 'productos', 'categorías']
-        is_navigation = any(word in title_lower for word in navigation_words)
-
-        # Longitud razonable para un nombre de producto
-        reasonable_length = 3 <= len(title) <= 150
-
-        return has_product_keyword and not is_navigation and reasonable_length
-
-    def find_product_by_query(self, products: List[Product], query: str) -> Optional[Product]:
-        """
-        Buscar producto que coincida con una consulta
-
-        Args:
-            products: Lista de productos
-            query: Consulta de búsqueda
-
-        Returns:
-            Optional[Product]: Producto encontrado o None
-        """
-        if not query or not products:
-            return None
-
-        query_lower = query.lower()
-
-        # Búsqueda exacta primero
-        for product in products:
-            if product.matches_query(query):
-                return product
-
-        # Si no hay coincidencia exacta, buscar alternativas
-        alternatives = []
-        for product in products[:5]:  # Limitar a 5 alternativas
-            if query_lower in product.nombre.lower():
-                alternatives.append(product)
-
-        return alternatives[0] if alternatives else None
-
-    def get_all_products(self, store_data: Dict[str, List[Product]]) -> List[Product]:
-        """
-        Obtener todos los productos de todas las tiendas
-
-        Args:
-            store_data: Diccionario con productos por tienda
-
-        Returns:
-            List[Product]: Lista combinada de productos
-        """
-        all_products = []
-        for products in store_data.values():
-            all_products.extend(products)
-        return all_products
+        paginas = int(fuente.get("paginas") or 1)
+        for numero in range(2, min(paginas, 5) + 1):
+            siguiente = fuente.get("url_paginada") or f"{url.rstrip('/')}/page/{numero}"
+            html = await self._html(siguiente)
+            if not html:
+                break
+            items.extend(self._extraer(html, fuente))
+        return items

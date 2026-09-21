@@ -1,0 +1,42 @@
+{
+  "_instrucciones": "Ejemplo para empresas de servicios profesionales: consultoría, contabilidad, diseño, marketing, software, abogados.",
+  "negocio": {
+    "nombre": "Estudio Faro - Consultoría y Marketing",
+    "tipo_negocio": "servicios",
+    "descripcion": "Acompañamos a pymes en contabilidad, marca y presencia digital.",
+    "ciudad": "Bogotá",
+    "direccion": "Calle 90 # 12-45, Oficina 502",
+    "telefono": "573009990011",
+    "moneda": "COP",
+    "horarios": [
+      { "dia": "lunes", "abre": "08:00", "cierra": "17:30" },
+      { "dia": "martes", "abre": "08:00", "cierra": "17:30" },
+      { "dia": "miercoles", "abre": "08:00", "cierra": "17:30" },
+      { "dia": "jueves", "abre": "08:00", "cierra": "17:30" },
+      { "dia": "viernes", "abre": "08:00", "cierra": "16:00" },
+      { "dia": "sabado", "cerrado": true },
+      { "dia": "domingo", "cerrado": true }
+    ],
+    "metodos_pago": ["Transferencia", "PSE", "Tarjeta corporativa"],
+    "tiempo_respuesta": "Un consultor te responde el mismo día hábil.",
+    "tono": "profesional, claro y sin tecnicismos de más",
+    "mensaje_bienvenida": "¡Hola! 👋 Somos *Estudio Faro*. Cuéntame qué necesita tu empresa y te propongo cómo ayudarte.",
+    "mensaje_humano": "Perfecto, ya le pasé tu caso a un consultor del equipo 👩‍💼 Te escribe hoy mismo.",
+    "politicas": ["Toda propuesta se entrega por escrito con alcance y tiempos.", "No facturamos horas adicionales sin autorización previa del cliente.", "Los planes mensuales se pueden cancelar con 30 días de aviso."],
+    "promociones": ["Diagnóstico inicial sin costo para empresas con menos de 20 empleados", "Contrato anual: 2 meses de asesoría sin costo"],
+    "faqs": [
+      { "pregunta": "¿Trabajan con empresas pequeñas?", "respuesta": "Sí, trabajamos desde emprendimientos de una persona hasta empresas de 80 empleados 🙌 ajustamos el alcance al tamaño y al presupuesto." },
+      { "pregunta": "¿Cómo se factura?", "respuesta": "Con factura electrónica y pago mensual anticipado o por proyecto. Manejamos transferencia, PSE y tarjeta corporativa." },
+      { "pregunta": "¿Hacen contrato?", "respuesta": "Siempre. Firmamos contrato con alcance, entregables y plazos antes de empezar 📝" }
+    ],
+    "catalogo": [
+      { "nombre": "Diagnóstico empresarial inicial", "tipo": "servicio", "categoria": "Consultoría", "precio": 0, "precio_texto": "Sin costo para pymes de menos de 20 empleados", "duracion": "1 hora", "modalidad": "virtual", "descripcion": "Revisamos tu situación actual en contabilidad, procesos y presencia digital, y entregamos recomendacionespriorizadas.", "incluye": ["Sesión de 1 hora", "Informe con hallazgos", "Plan de acción sugerido"], "etiquetas": ["diagnostico", "consultoria", "asesoria inicial", "pyme"], "disponibilidad": "por_agenda", "destacado": true },
+      { "nombre": "Contabilidad mensual para pymes", "tipo": "plan", "categoria": "Contabilidad", "precio": 650000, "precio_texto": "$650.000/mes (hasta 100 movimientos)", "duracion": "Mensual", "modalidad": "virtual", "descripcion": "Manejo contable, impuestos y nómina con reportes mensuales y acompañamiento de un contador asignado.", "incluye": ["Contabilidad", "Declaraciones", "Nómina", "Informe mensual", "Atención por chat"], "requisitos": "RUT, cámara de comercio y acceso a la facturación electrónica", "etiquetas": ["contabilidad", "contador", "impuestos", "nomina", "plan mensual"], "disponibilidad": "disponible", "destacado": true },
+      { "nombre": "Diseño de identidad de marca", "tipo": "servicio", "categoria": "Marca", "precio": 2400000, "duracion": "3 a 4 semanas", "modalidad": "virtual", "descripcion": "Investigación, naming opcional, logo, paleta, tipografías y manual de marca.", "incluye": ["Investigación", "Logo principal y variaciones", "Manual de marca", "Aplicaciones básicas"], "requisitos": "Brief de marca y referencias visuales", "etiquetas": ["marca", "branding", "logo", "identidad visual"], "disponibilidad": "por_agenda" },
+      { "nombre": "Gestión de redes sociales", "tipo": "plan", "categoria": "Marketing", "precio": 1250000, "precio_texto": "$1.250.000/mes", "duracion": "Mensual", "modalidad": "virtual", "descripcion": "12 publicaciones al mes, diseño, textos, programación y reporte de resultados.", "incluye": ["Parrilla mensual", "12 piezas", "Programación", "Informe de métricas"], "etiquetas": ["redes sociales", "instagram", "marketing", "contenido"], "disponibilidad": "disponible" },
+      { "nombre": "Página web corporativa", "tipo": "servicio", "categoria": "Digital", "precio": 3200000, "duracion": "4 a 6 semanas", "modalidad": "virtual", "descripcion": "Sitio de hasta 6 secciones, autogestionable, optimizado para buscadores y con formulario de contacto.", "incluye": ["Diseño responsive", "Hasta 6 secciones", "SEO básico", "Capacitación de uso"], "garantia": "3 meses de acompañamiento post-entrega", "etiquetas": ["pagina web", "sitio web", "web", "desarrollo"], "disponibilidad": "bajo_pedido" },
+      { "nombre": "Asesoría jurídica laboral (sesión)", "tipo": "servicio", "categoria": "Jurídica", "precio": 280000, "duracion": "1 hora", "modalidad": "virtual o presencial", "descripcion": "Revisión de contratos, liquidaciones y riesgos laborales con abogado especialista.", "incluye": ["Sesión", "Concepto escrito"], "etiquetas": ["abogado", "juridica", "laboral", "contratos"], "disponibilidad": "por_agenda" },
+      { "nombre": "Optimización de procesos (proyecto)", "tipo": "servicio", "categoria": "Consultoría", "precio_texto": "Desde $3.500.000 según alcance", "duracion": "6 a 8 semanas", "modalidad": "virtual + visitas", "descripcion": "Mapeo de procesos, indicadores, manuales y plan de mejora con acompañamiento en la implementación.", "requisitos": "Acceso a los equipos involucrados y datos de operación", "etiquetas": ["procesos", "mejora continua", "productividad", "consultoria"], "disponibilidad": "bajo_pedido" }
+    ]
+  }
+}

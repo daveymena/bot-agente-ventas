@@ -1,0 +1,40 @@
+{
+  "_instrucciones": "Ejemplo para restaurantes, comidas rápidas, cafeterías y panaderías. Copia este archivo a config/negocio.json y edítalo.",
+  "negocio": {
+    "nombre": "Sazón de la Abuela",
+    "tipo_negocio": "productos",
+    "descripcion": "Comida casera y almuerzos ejecutivos, con domicilio en el norte de la ciudad.",
+    "ciudad": "Cali",
+    "direccion": "Av 6N # 23-45, Barrio Granada",
+    "telefono": "573004445566",
+    "moneda": "COP",
+    "horarios": [
+      { "dia": "lunes", "abre": "11:00", "cierra": "21:00" },
+      { "dia": "martes", "abre": "11:00", "cierra": "21:00" },
+      { "dia": "miercoles", "abre": "11:00", "cierra": "21:00" },
+      { "dia": "jueves", "abre": "11:00", "cierra": "21:00" },
+      { "dia": "viernes", "abre": "11:00", "cierra": "22:00" },
+      { "dia": "sabado", "abre": "11:00", "cierra": "22:00" },
+      { "dia": "domingo", "abre": "12:00", "cierra": "17:00", "nota": "solo domicilios" }
+    ],
+    "metodos_pago": ["Efectivo", "Nequi", "Daviplata", "Tarjeta débito/crédito"],
+    "envio": "Domicilio $5.000 dentro del perímetro urbano. Pedidos desde $25.000 llegan sin costo.",
+    "cobertura": "Cali (Granada, Versalles, San Fernando, Tequendama, Centenario)",
+    "tono": "cálido, casero y rápido",
+    "mensaje_bienvenida": "¡Buenas! 🍲 Bienvenido a *Sazón de la Abuela*. ¿Quieres ver el menú de hoy o pides directo?",
+    "politicas": ["Los almuerzos ejecutivos aplican de lunes a viernes hasta las 3 p.m.", "Domicilios con demora estimada de 30 a 45 minutos."],
+    "promociones": ["Almuerzo ejecutivo + bebida por $28.000", "Los martes, 2x1 en limonada de coco"],
+    "faqs": [
+      { "pregunta": "¿Tienen menú del día?", "respuesta": "¡Sí! 🍽️ Nuestro menú del día cambia cada jornada y lo publicamos a las 10 a.m. ¿Te lo envío?" },
+      { "pregunta": "¿Hacen domicilios?", "respuesta": "Sí 🛵 Domicilio $5.000 dentro del perímetro y gratis en pedidos desde $25.000." }
+    ],
+    "catalogo": [
+      { "nombre": "Bandeja paisa", "tipo": "producto", "categoria": "Platos fuertes", "precio": 28000, "descripcion": "Frijoles, chicharrón, carne en polvo, huevo, arepa, plátano y aguacate.", "etiquetas": ["bandeja", "tipico", "frijoles"], "destacado": true, "imagen": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800" },
+      { "nombre": "Ajiaco santafereño", "tipo": "producto", "categoria": "Sopas", "precio": 26000, "descripcion": "Pollo desmenuzado, tres papas, guasca, alcaparras y crema.", "etiquetas": ["sopa", "ajiaco", "pollo"] },
+      { "nombre": "Almuerzo ejecutivo del día", "tipo": "producto", "categoria": "Almuerzos", "precio": 22000, "descripcion": "Sopa, plato principal, acompañamiento, jugo y postre.", "etiquetas": ["almuerzo", "ejecutivo", "menu del dia"], "promocion": "Con bebida incluida", "destacado": true },
+      { "nombre": "Limonada de coco", "tipo": "producto", "categoria": "Bebidas", "precio": 9000, "etiquetas": ["bebida", "jugo", "limonada"] },
+      { "nombre": "Postre de natas", "tipo": "producto", "categoria": "Postres", "precio": 12000, "etiquetas": ["postre", "dulce"] },
+      { "nombre": "Catering para eventos (por persona)", "tipo": "servicio", "categoria": "Eventos", "precio_texto": "Desde $35.000 por persona", "disponibilidad": "por_agenda", "duracion": "4 horas de servicio", "modalidad": "presencial", "descripcion": "Montaje de mesas, personal de servicio y menú a elección para eventos de 20 a 200 personas.", "incluye": ["Montaje", "Meseros", "Menú personalizado", "Vajilla"], "requisitos": "Confirmar número de invitados, fecha y lugar", "etiquetas": ["catering", "evento", "fiesta", "matrimonio", "empresa"] }
+    ]
+  }
+}

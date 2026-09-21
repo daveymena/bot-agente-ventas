@@ -1,0 +1,53 @@
+# Despliegue 24/7: motor del agente + puente de WhatsApp (Baileys).
+#
+#   docker compose up -d --build     -> arranca todo
+#   docker compose logs -f puente    -> ver el QR y los mensajes
+#   docker compose down              -> detener
+#
+# Variables: copia .env.example a .env antes de arrancar.
+services:
+  agente:
+    build:
+      context: .
+      dockerfile: Dockerfile.agente
+    container_name: agente-ventas
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: 8000
+      BUSINESS_CONFIG: /app/config/negocio.json
+    ports:
+      - "8000:8000"          # simulador web y API (opcional, puedes cerrarlo)
+    volumes:
+      - ./config:/app/config  # tu negocio y catálogo, editable en caliente
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  puente:
+    build:
+      context: ./baileys-bridge
+    container_name: whatsapp-baileys
+    restart: unless-stopped
+    depends_on:
+      - agente
+    environment:
+      AGENT_URL: http://agente:8000
+      BRIDGE_TOKEN: ${BRIDGE_TOKEN:-}
+      BRIDGE_PORT: 3001
+      BRIDGE_HOST: 0.0.0.0
+      BAILEYS_AUTH_DIR: /data/auth
+      RESPOND_TO_GROUPS: ${RESPOND_TO_GROUPS:-false}
+      PERMITIR_MIS_MENSAJES: ${PERMITIR_MIS_MENSAJES:-false}
+      HUMAN_ESCALATION_NUMBER: ${HUMAN_ESCALATION_NUMBER:-}
+      SEND_PRESENCE: ${SEND_PRESENCE:-true}
+    ports:
+      - "3001:3001"          # panel para escanear el QR (ciérralo al terminar)
+    volumes:
+      - sesion_whatsapp:/data # conserva la sesión: no hay que re-escanear el QR
+
+volumes:
+  sesion_whatsapp:

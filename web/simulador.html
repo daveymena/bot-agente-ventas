@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador · Agente de Ventas</title>
+<style>
+  :root {
+    --fondo: #0b141a; --panel: #111b21; --burbuja-cliente: #005c4b;
+    --burbuja-agente: #202c33; --texto: #e9edef; --suave: #8696a0;
+    --acento: #00a884; --borde: #222d34;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--fondo); color: var(--texto);
+    display: flex; justify-content: center; min-height: 100vh;
+  }
+  .app { width: 100%; max-width: 720px; display: flex; flex-direction: column; height: 100vh; }
+  header {
+    padding: 14px 18px; background: var(--panel); border-bottom: 1px solid var(--borde);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .avatar {
+    width: 42px; height: 42px; border-radius: 50%; background: var(--acento);
+    display: grid; place-items: center; font-size: 20px; flex-shrink: 0;
+  }
+  .titulo { font-weight: 600; font-size: 15px; }
+  .sub { font-size: 12px; color: var(--suave); }
+  header .estado { margin-left: auto; text-align: right; font-size: 11px; color: var(--suave); }
+  #chat {
+    flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px;
+    background-image: radial-gradient(circle at 20% 10%, #16242c 0, transparent 45%);
+  }
+  .fila { display: flex; }
+  .fila.cliente { justify-content: flex-end; }
+  .burbuja {
+    max-width: 82%; padding: 9px 12px; border-radius: 10px; font-size: 14.5px;
+    line-height: 1.45; white-space: pre-wrap; word-wrap: break-word; position: relative;
+  }
+  .cliente .burbuja { background: var(--burbuja-cliente); border-top-right-radius: 2px; }
+  .agente .burbuja { background: var(--burbuja-agente); border-top-left-radius: 2px; }
+  .sistema .burbuja {
+    background: transparent; border: 1px dashed var(--borde); color: var(--suave);
+    font-size: 12.5px; max-width: 100%; width: 100%;
+  }
+  .burbuja img { max-width: 100%; border-radius: 8px; margin-top: 8px; display: block; }
+  .hora { font-size: 10.5px; color: var(--suave); text-align: right; margin-top: 4px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 18px 0; }
+  .chip {
+    background: var(--panel); border: 1px solid var(--borde); color: var(--texto);
+    border-radius: 999px; padding: 6px 12px; font-size: 12.5px; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--acento); }
+  footer {
+    display: flex; gap: 8px; padding: 12px 18px; background: var(--panel);
+    border-top: 1px solid var(--borde);
+  }
+  input[type=text] {
+    flex: 1; padding: 12px 14px; border-radius: 22px; border: 1px solid var(--borde);
+    background: #202c33; color: var(--texto); font: inherit;
+  }
+  button.enviar {
+    width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--acento);
+    color: #04211c; font-size: 18px; cursor: pointer;
+  }
+  .debug {
+    font-size: 11.5px; color: var(--suave); padding: 6px 18px 14px; background: var(--panel);
+    border-top: 1px solid var(--borde);
+  }
+  .debug b { color: #53bdeb; font-weight: 600; }
+  .escribiendo { color: var(--suave); font-size: 13px; padding: 0 18px 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="avatar">🤖</div>
+    <div>
+      <div class="titulo" id="nombre-negocio">Cargando negocio…</div>
+      <div class="sub" id="detalle-negocio">—</div>
+    </div>
+    <div class="estado" id="estado-ia">—</div>
+  </header>
+
+  <div id="chat"></div>
+  <div class="chips" id="sugerencias"></div>
+  <div class="escribiendo" id="escribiendo"></div>
+
+  <footer>
+    <input type="text" id="entrada" placeholder="Escribe como si fueras el cliente…" autocomplete="off">
+    <button class="enviar" id="enviar" title="Enviar">➤</button>
+  </footer>
+  <div class="debug" id="debug">
+    Simulador local: usa el mismo motor que WhatsApp, pero sin enviar nada.
+  </div>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const entrada = document.getElementById('entrada');
+const escribiendo = document.getElementById('escribiendo');
+const chatId = '573000000000@s.whatsapp.net';
+let contador = 0;
+
+const hora = () => new Date().toLocaleTimeString('es-CO', {hour: '2-digit', minute: '2-digit'});
+
+function burbuja(quien, contenido, opciones = {}) {
+  const fila = document.createElement('div');
+  fila.className = `fila ${quien}`;
+  const b = document.createElement('div');
+  b.className = 'burbuja';
+  b.innerHTML = formatearWhatsApp(contenido);
+  if (opciones.imagen) {
+    const img = document.createElement('img');
+    img.src = opciones.imagen;
+    img.alt = 'Imagen del producto';
+    img.onerror = () => img.remove();
+    b.appendChild(img);
+  }
+  const h = document.createElement('div');
+  h.className = 'hora';
+  h.textContent = hora();
+  b.appendChild(h);
+  fila.appendChild(b);
+  chat.appendChild(fila);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/** Negrita de WhatsApp (*texto*) y saltos de línea */
+function formatearWhatsApp(texto) {
+  const escapado = String(texto)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return escapado.replace(/\*([^*\n]+)\*/g, '<b>$1</b>');
+}
+
+function sistema(texto) {
+  const fila = document.createElement('div');
+  fila.className = 'fila sistema';
+  const b = document.createElement('div');
+  b.className = 'burbuja';
+  b.innerHTML = formatearWhatsApp(texto);
+  fila.appendChild(b);
+  chat.appendChild(fila);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function enviar(textoForzado) {
+  const texto = (textoForzado ?? entrada.value).trim();
+  if (!texto) return;
+  entrada.value = '';
+  burbuja('cliente', texto);
+  escribiendo.textContent = 'el negocio está escribiendo…';
+  contador += 1;
+
+  try {
+    const respuesta = await fetch('/mensaje', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        canal: 'simulador',
+        mensaje: {
+          id: `sim-${contador}`, chat_id: chatId, numero: '573000000000',
+          texto, tipo: 'texto', nombre: 'Cliente de prueba',
+          timestamp: Math.floor(Date.now() / 1000),
+        },
+      }),
+    });
+    const datos = await respuesta.json();
+    escribiendo.textContent = '';
+
+    if (datos.ignorado) {
+      sistema(`(el agente no respondió: ${datos.motivo || 'sin motivo'})`);
+      return;
+    }
+
+    for (const accion of datos.acciones || []) {
+      if (accion.tipo === 'texto') {
+        burbuja('agente', accion.texto);
+      } else if (accion.tipo === 'imagen') {
+        burbuja('agente', accion.caption || '📸', {imagen: accion.url});
+      } else if (accion.tipo === 'notificar') {
+        sistema(`🔔 Aviso al equipo: ${accion.texto}`);
+      } else if (accion.tipo === 'presencia') {
+        await new Promise(r => setTimeout(r, Math.min(accion.ms || 500, 1500)));
+      }
+    }
+
+    const d = datos.debug || {};
+    const partes = [];
+    if (datos.intenciones?.length) partes.push(`intención <b>${datos.intenciones.join(', ')}</b>`);
+    if (d.item) partes.push(`ítem <b>${d.item.nombre}</b>`);
+    if (d.ia) partes.push(`redacción: <b>${d.ia}</b>`);
+    if (d.escalar) partes.push('<b>escalado a humano</b>');
+    document.getElementById('debug').innerHTML = partes.length
+      ? partes.join(' · ')
+      : 'Sin coincidencia en el catálogo: el agente respondió con alternativas.';
+    if (d.sugerencias?.length) pintarSugerencias(d.sugerencias);
+  } catch (error) {
+    escribiendo.textContent = '';
+    sistema(`Error llamando al agente: ${error.message}`);
+  }
+}
+
+function pintarSugerencias(lista) {
+  const cont = document.getElementById('sugerencias');
+  cont.innerHTML = '';
+  lista.slice(0, 5).forEach(texto => {
+    const boton = document.createElement('button');
+    boton.className = 'chip';
+    boton.textContent = texto;
+    boton.onclick = () => enviar(texto);
+    cont.appendChild(boton);
+  });
+}
+
+async function cargarNegocio() {
+  try {
+    const negocio = await (await fetch('/negocio')).json();
+    document.getElementById('nombre-negocio').textContent = negocio.nombre;
+    document.getElementById('detalle-negocio').textContent =
+      `${negocio.items} ítems · ${negocio.productos} productos · ${negocio.servicios} servicios · ${negocio.ciudad || ''}`;
+    const estado = await (await fetch('/estado')).json();
+    document.getElementById('estado-ia').innerHTML =
+      `IA: ${estado.ia.disponible ? estado.ia.proveedor : 'motor propio 🧠'}<br>${estado.negocio.abierto_ahora === true ? 'abierto ahora' : estado.negocio.abierto_ahora === false ? 'cerrado ahora' : ''}`;
+    const cats = Object.keys(negocio.categorias || {}).slice(0, 3);
+    pintarSugerencias([
+      'hola',
+      '¿qué productos y servicios tienen?',
+      ...cats.map(c => `¿Qué tienen en ${c}?`),
+      '¿Cuáles son los precios?',
+    ]);
+  } catch (error) {
+    sistema(`No pude cargar la información del negocio: ${error.message}`);
+  }
+}
+
+document.getElementById('enviar').onclick = () => enviar();
+entrada.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviar(); });
+
+sistema('Simulador listo. Escríbele al agente como si fueras un cliente.');
+cargarNegocio();
+</script>
+</body>
+</html>

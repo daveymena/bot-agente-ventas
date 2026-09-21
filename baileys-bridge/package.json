@@ -1,0 +1,24 @@
+{
+  "name": "baileys-bridge-agente-ventas",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Puente WhatsApp (Baileys) <-> Agente de ventas (Python/FastAPI). Escucha mensajes y ejecuta las respuestas que genera el agente.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "pino": "^9.5.0",
+    "qrcode": "^1.5.4"
+  }
+}

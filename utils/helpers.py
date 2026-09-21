@@ -1,234 +1,149 @@
 """
-Utilidades y funciones auxiliares
+Utilidades generales del agente (sirven para cualquier rubro).
 """
+from __future__ import annotations
+
 import re
-import logging
-from typing import Dict, Any, Optional
-from urllib.parse import quote
+from typing import Any, Dict, Iterable, List, Optional
 
-logger = logging.getLogger(__name__)
+from utils.texto import (  # noqa: F401  (reexportadas por comodidad)
+    ahora,
+    contiene_alguna,
+    formatear_precio,
+    normalizar,
+    parsear_numero,
+    raiz,
+    recortar,
+    similitud,
+    sin_acentos,
+    titulo,
+    tokenizar,
+    unir,
+)
 
-def clean_text(text: str) -> str:
-    """
-    Limpiar y normalizar texto
+# Emojis por tipo/categoría: se eligen por palabras del propio catálogo, así
+# funciona con cualquier negocio sin configuración extra.
+EMOJIS_POR_PALABRA = [
+    (("laptop", "portatil", "computador", "pc", "notebook", "monitor"), "💻"),
+    (("celular", "telefono", "smartphone", "iphone", "galaxy", "tablet"), "📱"),
+    (("audifono", "auricular", "parlante", "bocina", "sonido"), "🎧"),
+    (("cargador", "cable", "adaptador", "usb", "bateria", "power"), "🔌"),
+    (("camara", "foto", "video", "dron"), "📷"),
+    (("impresora", "toner", "tinta", "escaner"), "🖨️"),
+    (("teclado", "mouse", "gamer", "consola", "control"), "🎮"),
+    (("corte", "cabello", "barber", "peluqueria", "uñas", "manicure", "estetica", "spa"), "💅"),
+    (("comida", "plato", "almuerzo", "cena", "desayuno", "pizza", "hamburguesa", "restaurante"), "🍽️"),
+    (("bebida", "cafe", "jugo", "cerveza", "postre", "helado"), "🥤"),
+    (("carro", "moto", "vehiculo", "llanta", "motor", "aceite", "taller", "frenos"), "🚗"),
+    (("casa", "apartamento", "inmueble", "arriendo", "lote", "oficina"), "🏠"),
+    (("salud", "medico", "odontolog", "dental", "consulta", "terapia", "clinica", "examen"), "🩺"),
+    (("curso", "clase", "taller de", "capacitacion", "certificacion", "idiomas"), "🎓"),
+    (("instalacion", "mantenimiento", "reparacion", "soporte", "arreglo", "revision"), "🛠️"),
+    (("envio", "domicilio", "entrega", "mensajeria"), "🚚"),
+    (("gimnasio", "entrenamiento", "fitness", "yoga", "pilates"), "🏋️"),
+    (("ropa", "camisa", "zapatos", "tenis", "moda", "vestido"), "👕"),
+    (("abogado", "contador", "asesoria", "consultoria", "tramite", "notaria"), "⚖️"),
+    (("viaje", "tour", "hotel", "tiquete", "vuelo", "pasadia"), "✈️"),
+    (("evento", "fiesta", "catering", "sonido profesional", "decoracion", "dj"), "🎉"),
+    (("seguro", "poliza", "financiero", "credito", "prestamo"), "🛡️"),
+]
 
-    Args:
-        text: Texto a limpiar
 
-    Returns:
-        str: Texto limpio
-    """
-    if not text:
+def emoji_para(item: Any) -> str:
+    """Emoji razonable para un ítem del catálogo, según su texto."""
+    texto = " ".join([
+        getattr(item, "nombre", "") or "",
+        getattr(item, "categoria", "") or "",
+        getattr(item, "tipo", "") or "",
+        " ".join(getattr(item, "etiquetas", []) or []),
+    ])
+    t = normalizar(texto)
+    for palabras, emoji in EMOJIS_POR_PALABRA:
+        for palabra in palabras:
+            if normalizar(palabra) in t:
+                return emoji
+    return "🛠️" if getattr(item, "es_servicio", False) else "📦"
+
+
+def limpiar_texto(texto: str) -> str:
+    """Normaliza espacios y quita caracteres de control."""
+    if not texto:
         return ""
+    limpio = re.sub(r"[\u0000-\u0008\u000b\u000c\u000e-\u001f]", "", str(texto))
+    return re.sub(r"[ \t]{2,}", " ", limpio).strip()
 
-    # Remover caracteres especiales pero mantener emojis
-    text = re.sub(r'[^\w\s\u00C0-\u017F\u2000-\u206F\u2600-\u27FF]', '', text)
 
-    # Normalizar espacios
-    text = ' '.join(text.split())
-
-    return text.strip()
-
-def extract_urls(text: str) -> list:
-    """
-    Extraer URLs de un texto
-
-    Args:
-        text: Texto que puede contener URLs
-
-    Returns:
-        list: Lista de URLs encontradas
-    """
-    url_pattern = r'https?://(?:[-\w.])+(?:[:\d]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:#(?:\w*))?)'
-    return re.findall(url_pattern, text)
-
-def format_phone_number(phone: str) -> str:
-    """
-    Formatear número de teléfono
-
-    Args:
-        phone: Número de teléfono
-
-    Returns:
-        str: Número formateado
-    """
-    if not phone:
-        return ""
-
-    # Remover caracteres no numéricos
-    cleaned = re.sub(r'\D', '', phone)
-
-    # Asegurar que tenga código de país
-    if len(cleaned) == 10:  # Solo número local
-        cleaned = f"57{cleaned}"  # Agregar código Colombia
-    elif len(cleaned) == 12 and cleaned.startswith('57'):
-        pass  # Ya tiene código correcto
-    else:
-        logger.warning(f"Formato de teléfono inesperado: {phone}")
-
-    return cleaned
-
-def validate_webhook_data(data: Dict[str, Any]) -> bool:
-    """
-    Validar estructura básica de datos del webhook
-
-    Args:
-        data: Datos del webhook
-
-    Returns:
-        bool: True si la estructura es válida
-    """
-    try:
-        # Verificar estructura básica
-        if not isinstance(data, dict):
-            return False
-
-        # Verificar que tenga body o data
-        if 'body' not in data and 'data' not in data:
-            return False
-
-        # Si tiene body, verificar que tenga data
-        if 'body' in data and not isinstance(data['body'], dict):
-            return False
-
-        return True
-
-    except Exception as e:
-        logger.error(f"Error validando webhook data: {str(e)}")
+def url_valida(url: Optional[str]) -> bool:
+    if not url:
         return False
+    return bool(re.match(r"^https?://[^\s]+$", url.strip(), re.IGNORECASE))
 
-def safe_get(data: Dict[str, Any], keys: list, default: Any = None) -> Any:
-    """
-    Obtener valor de diccionario de forma segura
 
-    Args:
-        data: Diccionario
-        keys: Lista de claves a probar
-        default: Valor por defecto
-
-    Returns:
-        Any: Valor encontrado o default
-    """
-    for key in keys:
-        if key in data:
-            return data[key]
-    return default
-
-def encode_url_param(text: str) -> str:
-    """
-    Codificar texto para URL
-
-    Args:
-        text: Texto a codificar
-
-    Returns:
-        str: Texto codificado
-    """
-    return quote(str(text), safe='')
-
-def format_currency(amount: float, currency: str = "COP") -> str:
-    """
-    Formatear cantidad como moneda
-
-    Args:
-        amount: Cantidad numérica
-        currency: Código de moneda
-
-    Returns:
-        str: Cantidad formateada
-    """
-    try:
-        if currency.upper() == "COP":
-            return f"${amount:,.0f}".replace(",", ".")
-        elif currency.upper() == "USD":
-            return f"${amount:,.2f}"
+def dividir_en_bloques(texto: str, maximo: int = 900) -> List[str]:
+    """Divide un texto largo en bloques que WhatsApp pueda leer cómodo."""
+    if not texto:
+        return []
+    if len(texto) <= maximo:
+        return [texto]
+    bloques: List[str] = []
+    actual = ""
+    for parrafo in texto.split("\n\n"):
+        if len(actual) + len(parrafo) + 2 <= maximo:
+            actual = f"{actual}\n\n{parrafo}" if actual else parrafo
         else:
-            return f"{amount:.2f} {currency}"
-    except (ValueError, TypeError):
-        return str(amount)
+            if actual:
+                bloques.append(actual)
+            actual = parrafo
+    if actual:
+        bloques.append(actual)
+    return bloques
 
-def calculate_similarity(text1: str, text2: str) -> float:
-    """
-    Calcular similitud entre dos textos (simple)
 
-    Args:
-        text1: Primer texto
-        text2: Segundo texto
+def resumir_para_aviso(texto: str, limite: int = 200) -> str:
+    """Texto corto para el aviso que recibe el dueño del negocio."""
+    return recortar(limpiar_texto(texto), limite)
 
-    Returns:
-        float: Similitud entre 0 y 1
-    """
-    if not text1 or not text2:
-        return 0.0
 
-    text1 = text1.lower()
-    text2 = text2.lower()
+def extraer_numero(texto: str, pais: str = "57") -> Optional[str]:
+    """Extrae un teléfono de un texto libre ('mi numero es 300 111 2233')."""
+    digitos = re.sub(r"\D", "", texto or "")
+    if len(digitos) == 10:
+        return f"{pais}{digitos}"
+    if len(digitos) == 12 and digitos.startswith(pais):
+        return digitos
+    if 11 <= len(digitos) <= 15:
+        return digitos
+    return None
 
-    # Contar palabras en común
-    words1 = set(text1.split())
-    words2 = set(text2.split())
 
-    if not words1 or not words2:
-        return 0.0
+def deduplicar(items: Iterable[Any], clave=lambda x: x) -> List[Any]:
+    vistos = set()
+    salida = []
+    for item in items:
+        k = clave(item)
+        if k in vistos:
+            continue
+        vistos.add(k)
+        salida.append(item)
+    return salida
 
-    intersection = words1.intersection(words2)
-    union = words1.union(words2)
 
-    return len(intersection) / len(union)
+def calcular_metricas_negocio(catalogo_items: List[Any]) -> Dict[str, Any]:
+    """Resumen del catálogo útil para el panel y el endpoint /estado."""
+    productos = [i for i in catalogo_items if not getattr(i, "es_servicio", False)]
+    servicios = [i for i in catalogo_items if getattr(i, "es_servicio", False)]
+    con_precio = [i for i in catalogo_items if getattr(i, "precio", None) is not None]
+    precios = [i.precio for i in con_precio]
 
-def truncate_text(text: str, max_length: int, suffix: str = "...") -> str:
-    """
-    Truncar texto a longitud máxima
+    def promedio(valores: List[float]) -> Optional[float]:
+        return round(sum(valores) / len(valores), 2) if valores else None
 
-    Args:
-        text: Texto a truncar
-        max_length: Longitud máxima
-        suffix: Sufijo para texto truncado
-
-    Returns:
-        str: Texto truncado
-    """
-    if not text or len(text) <= max_length:
-        return text
-
-    return text[:max_length - len(suffix)] + suffix
-
-def is_valid_json(data: Any) -> bool:
-    """
-    Verificar si los datos son JSON válidos
-
-    Args:
-        data: Datos a verificar
-
-    Returns:
-        bool: True si son JSON válidos
-    """
-    try:
-        import json
-        json.dumps(data)
-        return True
-    except (TypeError, ValueError):
-        return False
-
-def get_nested_value(data: Dict[str, Any], path: str, default: Any = None) -> Any:
-    """
-    Obtener valor anidado de diccionario usando notación de punto
-
-    Args:
-        data: Diccionario
-        path: Ruta (ej: "body.data.message")
-        default: Valor por defecto
-
-    Returns:
-        Any: Valor encontrado o default
-    """
-    keys = path.split('.')
-    current = data
-
-    for key in keys:
-        if isinstance(current, dict) and key in current:
-            current = current[key]
-        else:
-            return default
-
-    return current
+    return {
+        "total_items": len(catalogo_items),
+        "productos": len(productos),
+        "servicios": len(servicios),
+        "con_precio": len(con_precio),
+        "precio_promedio": promedio(precios),
+        "precio_min": min(precios) if precios else None,
+        "precio_max": max(precios) if precios else None,
+    }

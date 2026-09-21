@@ -1,0 +1,42 @@
+{
+  "_instrucciones": "Ejemplo para tiendas de tecnología (el caso original de este proyecto). Incluye fuentes de scraping para refrescar el catálogo desde la web.",
+  "negocio": {
+    "nombre": "MegaComputer",
+    "tipo_negocio": "productos",
+    "descripcion": "Venta de computadores, accesorios y servicio técnico.",
+    "ciudad": "Cali",
+    "direccion": "Cra 15 # 12-30, Local 5",
+    "telefono": "573002223344",
+    "moneda": "COP",
+    "horarios": [
+      { "dia": "lunes", "abre": "09:00", "cierra": "18:30" },
+      { "dia": "martes", "abre": "09:00", "cierra": "18:30" },
+      { "dia": "miercoles", "abre": "09:00", "cierra": "18:30" },
+      { "dia": "jueves", "abre": "09:00", "cierra": "18:30" },
+      { "dia": "viernes", "abre": "09:00", "cierra": "18:30" },
+      { "dia": "sabado", "abre": "09:00", "cierra": "14:00" },
+      { "dia": "domingo", "cerrado": true }
+    ],
+    "metodos_pago": ["Efectivo", "Transferencia", "Nequi", "Tarjeta débito/crédito"],
+    "envio": "Envío gratis en Cali desde $200.000. Resto del país por transportadora, 2 a 4 días.",
+    "cobertura": "Cali, Yumbo, Palmira y Jamundí (servicio técnico solo en Cali)",
+    "tono": "directo, técnico y útil",
+    "mensaje_bienvenida": "¡Hola! 💻 Bienvenido a *MegaComputer*. ¿Buscas un equipo, un accesorio o quieres revisar algo técnico?",
+    "politicas": ["Garantía de 12 meses en equipos nuevos.", "Cambio dentro de los 5 días con empaque original."],
+    "promociones": ["Combo PC + monitor con 10% de descuento"],
+    "faqs": [
+      { "pregunta": "¿Hacen factura?", "respuesta": "Sí, emitimos factura electrónica 🧾 Solo necesito tu cédula o NIT al confirmar." },
+      { "pregunta": "¿Los equipos son nuevos?", "respuesta": "Los equipos de línea son nuevos y sellados. Cuando manejamos reacondicionados lo decimos con claridad y bajan de precio." }
+    ],
+    "fuentes_scraping": [
+      { "nombre": "MegaPack", "url": "https://megapack-nu.vercel.app/", "selector": "h1, h2, h3, .product-title", "tipo": "producto" },
+      { "nombre": "MegaComputer", "url": "https://megacomputer.com.co/", "selector": "h1, h2, h3, .product-title", "tipo": "producto" }
+    ],
+    "catalogo": [
+      { "nombre": "Portátil HP 250 G9 Core i5", "tipo": "producto", "categoria": "Portátiles", "precio": 1980000, "descripcion": "Core i5 12ª gen, 8GB RAM, SSD 256GB, pantalla 15.6\" HD.", "etiquetas": ["portatil", "hp", "laptop", "oficina"], "disponibilidad": "disponible", "stock": 5, "garantia": "12 meses", "destacado": true },
+      { "nombre": "Monitor LED 24\" Full HD", "tipo": "producto", "categoria": "Monitores", "precio": 620000, "descripcion": "24 pulgadas, 75 Hz, HDMI y VGA, incluye cable.", "etiquetas": ["monitor", "pantalla", "24 pulgadas"], "disponibilidad": "disponible", "stock": 9, "garantia": "12 meses" },
+      { "nombre": "Teclado mecánico RGB", "tipo": "producto", "categoria": "Accesorios", "precio": 165000, "descripcion": "Switches azules, 104 teclas, retroiluminación RGB.", "etiquetas": ["teclado", "mecanico", "gamer", "rgb"], "disponibilidad": "disponible", "stock": 14 },
+      { "nombre": "Mantenimiento de portátil", "tipo": "servicio", "categoria": "Servicio técnico", "precio": 85000, "duracion": "1 a 2 horas", "modalidad": "presencial", "descripcion": "Limpieza, pasta térmica, diagnóstico y actualización de software.", "incluye": ["Limpieza", "Pasta térmica", "Diagnóstico"], "etiquetas": ["mantenimiento", "limpieza", "revision", "servicio tecnico"], "disponibilidad": "por_agenda", "garantia": "90 días" }
+    ]
+  }
+}

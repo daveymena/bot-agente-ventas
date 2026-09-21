@@ -1,0 +1,42 @@
+{
+  "_instrucciones": "Ejemplo para consultorios de salud (odontología, medicina, psicología, veterinaria). Nota: para temas clínicos conviene que las respuestas se confirmen siempre con una persona del equipo.",
+  "negocio": {
+    "nombre": "Clínica Dental Sonrisa Sana",
+    "tipo_negocio": "servicios",
+    "descripcion": "Odontología general, ortodoncia y estética dental.",
+    "ciudad": "Cali",
+    "direccion": "Av 5N # 21-08, Consultorio 402",
+    "telefono": "573007778899",
+    "moneda": "COP",
+    "horarios": [
+      { "dia": "lunes", "abre": "08:00", "cierra": "18:00" },
+      { "dia": "martes", "abre": "08:00", "cierra": "18:00" },
+      { "dia": "miercoles", "abre": "08:00", "cierra": "18:00" },
+      { "dia": "jueves", "abre": "08:00", "cierra": "18:00" },
+      { "dia": "viernes", "abre": "08:00", "cierra": "17:00" },
+      { "dia": "sabado", "abre": "08:00", "cierra": "13:00", "nota": "solo urgencias" },
+      { "dia": "domingo", "cerrado": true }
+    ],
+    "metodos_pago": ["Efectivo", "Tarjeta débito/crédito", "Transferencia", "Financiación con Sistecredito"],
+    "tono": "profesional, tranquilo y empático",
+    "mensaje_bienvenida": "¡Hola! 😊 Gracias por escribir a *Clínica Dental Sonrisa Sana*. ¿Necesitas agendar una cita, saber el costo de un tratamiento o tienes una urgencia?",
+    "mensaje_humano": "Ya le avisé a nuestra coordinadora de citas 👩⚕️ Te escribe por este mismo chat para confirmar disponibilidad.",
+    "politicas": ["Atendemos con cita previa; las urgencias tienen cupo el mismo día.", "Los presupuestos de ortodoncia incluyen estudio radiográfico y plan de tratamiento."],
+    "promociones": ["Limpieza dental + valoración por $90.000 este mes", "Plan de ortodoncia con 10% de descuento pagando de contado"],
+    "faqs": [
+      { "pregunta": "¿Atienden urgencias?", "respuesta": "Sí 🚨 Reservamos cupos diarios para dolor agudo, fracturas dentales y sangrado. Cuéntame qué te pasó y te doy el horario más cercano." },
+      { "pregunta": "¿Aceptan seguro o EPS?", "respuesta": "Trabajamos con planes complementarios y medicina prepagada. Dime a qué entidad perteneces y lo verificamos por ti." },
+      { "pregunta": "¿Cuánto dura un tratamiento de ortodoncia?", "respuesta": "Entre 12 y 24 meses en promedio, según el caso y la constancia con los controles." }
+    ],
+    "palabras_humano": ["hablar con alguien", "con la doctora", "con el doctor", "persona real"],
+    "catalogo": [
+      { "nombre": "Consulta de valoración y diagnóstico", "tipo": "servicio", "categoria": "Consulta", "precio": 60000, "duracion": "30 minutos", "modalidad": "presencial", "descripcion": "Revisión clínica completa, diagnóstico y plan de tratamiento por escrito.", "incluye": ["Examen clínico", "Plan de tratamiento", "Presupuesto"], "etiquetas": ["consulta", "valoracion", "diagnostico", "odontologo"], "disponibilidad": "por_agenda", "agenda": "Cupos de lunes a viernes y sábados en la mañana", "destacado": true },
+      { "nombre": "Limpieza dental profesional", "tipo": "servicio", "categoria": "Prevención", "precio": 120000, "duracion": "45 minutos", "modalidad": "presencial", "descripcion": "Remoción de sarro y placa con ultrasonido, pulido y aplicación de flúor.", "incluye": ["Ultrasonido", "Pulido", "Aplicación de flúor"], "etiquetas": ["limpieza", "sarro", "profilaxis", "prevencion"], "disponibilidad": "por_agenda", "promocion": "$90.000 este mes", "destacado": true },
+      { "nombre": "Tratamiento de ortodoncia con brackets", "tipo": "servicio", "categoria": "Ortodoncia", "precio_texto": "Desde $2.800.000 en cuotas mensuales", "duracion": "12 a 24 meses", "modalidad": "presencial", "descripcion": "Brackets metálicos o estéticos con controles mensuales incluidos.", "incluye": ["Estudio y plan", "Instalación de brackets", "Controles mensuales", "Retenedores al final"], "requisitos": "Radiografía panorámica y estudios previos", "etiquetas": ["ortodoncia", "brackets", "frenillos", "alinear dientes"], "disponibilidad": "por_agenda" },
+      { "nombre": "Blanqueamiento dental", "tipo": "servicio", "categoria": "Estética", "precio": 450000, "duracion": "1 hora", "descripcion": "Blanqueamiento en consultorio con lámpara y kit de mantenimiento.", "incluye": ["Sesión en consultorio", "Kit para casa"], "etiquetas": ["blanqueamiento", "estetica", "dientes blancos"], "disponibilidad": "por_agenda" },
+      { "nombre": "Calzas y empastes", "tipo": "servicio", "categoria": "Odontología general", "precio_texto": "Desde $140.000 según la superficie", "duracion": "40 minutos", "descripcion": "Restauración en resina del color del diente.", "etiquetas": ["calza", "empaste", "caries", "resina"], "disponibilidad": "por_agenda" },
+      { "nombre": "Urgencia odontológica", "tipo": "servicio", "categoria": "Urgencias", "precio": 90000, "duracion": "30 minutos", "modalidad": "presencial", "descripcion": "Atención de dolor agudo, fracturas o sangrado con cupo el mismo día.", "etiquetas": ["urgencia", "dolor", "emergencia", "fractura"], "disponibilidad": "disponible", "agenda": "Cupos reservados todos los días de lunes a sábado" },
+      { "nombre": "Odontopediatría", "tipo": "servicio", "categoria": "Niños", "precio": 80000, "duracion": "40 minutos", "descripcion": "Atención para niños desde los 3 años con enfoque preventivo y sin miedo.", "etiquetas": ["niños", "pediatria", "infantil"], "disponibilidad": "por_agenda" }
+    ]
+  }
+}
