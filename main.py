@@ -96,10 +96,55 @@ def verificar_token(
     raise HTTPException(status_code=401, detail="Token inválido")
 
 
+def _portada(a: SalesAgent) -> str:
+    """Página simple de bienvenida (la que ves al abrir la raíz en el navegador)."""
+    categorias = "".join(
+        f"<li>{c} <span>({n})</span></li>" for c, n in a.negocio.categorias_con_items().items()
+    )
+    ia = a.ia.estado()
+    return f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{a.negocio.nombre} · Agente de ventas</title><style>
+ body{{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ background:#0b141a;color:#e9edef;display:grid;place-items:center;min-height:100vh;padding:24px}}
+ .caja{{max-width:640px;width:100%}}
+ h1{{font-size:22px;margin:0 0 6px}} .sub{{color:#8696a0;margin:0 0 22px;font-size:14px}}
+ .tarjeta{{background:#111b21;border:1px solid #222d34;border-radius:14px;padding:20px;margin-bottom:14px}}
+ a.boton{{display:block;text-align:center;background:#00a884;color:#04211c;font-weight:700;
+ text-decoration:none;padding:13px;border-radius:10px;margin-bottom:10px}}
+ a.sec{{display:block;text-align:center;color:#e9edef;text-decoration:none;border:1px solid #2a3942;
+ padding:11px;border-radius:10px;font-size:14px}}
+ ul{{margin:0;padding-left:18px;color:#d1d7db;font-size:14px;line-height:1.7}} li span{{color:#8696a0}}
+ .dato{{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;color:#8696a0}}
+ .dato b{{color:#e9edef;font-weight:600}}
+</style></head><body><div class="caja">
+ <h1>🤖 {a.negocio.nombre}</h1>
+ <p class="sub">Agente de ventas para WhatsApp · {a.negocio.tipo_negocio} · {a.negocio.ciudad}</p>
+ <div class="tarjeta">
+  <a class="boton" href="/simulador">Probar el agente (simulador) →</a>
+  <a class="sec" href="/estado">Ver estado y métricas</a>
+ </div>
+ <div class="tarjeta">
+  <div class="dato"><span>Ítems en catálogo</span><b>{len(a.negocio.catalogo)}</b></div>
+  <div class="dato"><span>Redacción</span><b>{ia['proveedor'] if ia['disponible'] else 'motor propio (sin IA)'}</b></div>
+  <div class="dato"><span>Horario</span><b>{'abierto ahora' if a.negocio.esta_abierto() else 'cerrado ahora' if a.negocio.esta_abierto() is False else 'sin horario cargado'}</b></div>
+  <hr style="border:0;border-top:1px solid #222d34;margin:14px 0">
+  <ul>{categorias or '<li>Sin categorías cargadas</li>'}</ul>
+ </div>
+ <div class="tarjeta" style="font-size:13.5px;color:#8696a0">
+  WhatsApp se conecta con Baileys: abre el panel del puente y escanea el QR.
+  <br><br>API: <code>/mensaje</code> · <code>/estado</code> · <code>/catalogo</code> · <code>/negocio</code>
+ </div>
+</div></body></html>"""
+
+
 # --------------------------------------------------------------------- básicos
 @app.get("/")
-async def raiz() -> Dict[str, Any]:
+async def raiz(request: Request):
+    """JSON para integraciones; página de bienvenida si la abres en el navegador."""
     a = _agente()
+    if "text/html" in request.headers.get("accept", ""):
+        return HTMLResponse(_portada(a))
     return {
         "servicio": "Agente de Ventas multi-rubro",
         "estado": "activo" if a.is_running else "inactivo",
