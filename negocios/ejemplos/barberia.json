@@ -1,0 +1,41 @@
+{
+  "_instrucciones": "Ejemplo para barberías, peluquerías, salones de belleza y spas. Copia este archivo a config/negocio.json y edítalo.",
+  "negocio": {
+    "nombre": "Barbería El Rey",
+    "tipo_negocio": "servicios",
+    "descripcion": "Cortes clásicos, barba y cuidado personal con cita previa.",
+    "ciudad": "Cali",
+    "direccion": "Calle 9 # 43-10, San Fernando",
+    "telefono": "573005556677",
+    "moneda": "COP",
+    "horarios": [
+      { "dia": "lunes", "cerrado": true },
+      { "dia": "martes", "abre": "09:00", "cierra": "19:00" },
+      { "dia": "miercoles", "abre": "09:00", "cierra": "19:00" },
+      { "dia": "jueves", "abre": "09:00", "cierra": "19:00" },
+      { "dia": "viernes", "abre": "09:00", "cierra": "20:00" },
+      { "dia": "sabado", "abre": "08:00", "cierra": "18:00" },
+      { "dia": "domingo", "abre": "09:00", "cierra": "13:00" }
+    ],
+    "metodos_pago": ["Efectivo", "Nequi", "Daviplata", "Tarjeta"],
+    "tiempo_respuesta": "Confirmamos tu cita en minutos.",
+    "tono": "cercano, con confianza y buena energía",
+    "mensaje_bienvenida": "¡Bienvenido a *Barbería El Rey*! 💈 ¿Quieres agendar un corte, arreglar la barba o los dos?",
+    "politicas": ["Abrimos con cita previa; si no alcanzamos el cupo te ofrecemos el siguiente turno.", "El servicio se garantiza 5 días: si algo no quedó como querías, lo ajustamos sin costo."],
+    "promociones": ["Combo corte + barba por $40.000", "Todos los miércoles 15% de descuento en corte clásico"],
+    "faqs": [
+      { "pregunta": "¿Necesito cita?", "respuesta": "Recomendamos cita para no hacerte esperar 🗓️. También atendemos por orden de llegada si hay cupo." },
+      { "pregunta": "¿Atienden niños?", "respuesta": "¡Claro! 👦 Tenemos corte infantil y paciencia infinita con los más pequeños." }
+    ],
+    "palabras_servicio": ["corte", "barba", "cita", "turno"],
+    "catalogo": [
+      { "nombre": "Corte de cabello clásico", "tipo": "servicio", "categoria": "Cortes", "precio": 25000, "duracion": "30 minutos", "modalidad": "presencial", "descripcion": "Asesoría de estilo, corte a máquina y tijera, lavado y peinado.", "incluye": ["Lavado", "Peinado", "Perfilado"], "etiquetas": ["corte", "cabello", "clasico"], "sinonimos": ["corte de pelo", "cortada"], "disponibilidad": "por_agenda", "agenda": "Cupos cada 30 minutos de martes a domingo", "destacado": true, "imagen": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800" },
+      { "nombre": "Corte + arreglo de barba", "tipo": "servicio", "categoria": "Combos", "precio": 40000, "duracion": "50 minutos", "descripcion": "Corte completo más perfilado y arreglo de barba con toalla caliente.", "incluye": ["Corte", "Toalla caliente", "Aceite", "Perfilado"], "etiquetas": ["combo", "barba", "corte"], "disponibilidad": "por_agenda", "promocion": "Ahorras $5.000 frente a pedirlos por separado", "destacado": true },
+      { "nombre": "Arreglo de barba", "tipo": "servicio", "categoria": "Barba", "precio": 20000, "duracion": "25 minutos", "etiquetas": ["barba", "perfilado", "toalla caliente"], "disponibilidad": "por_agenda" },
+      { "nombre": "Diseño de cejas", "tipo": "servicio", "categoria": "Estética", "precio": 12000, "duracion": "15 minutos", "etiquetas": ["cejas", "estetica"], "disponibilidad": "por_agenda" },
+      { "nombre": "Tinte de barba o cabello", "tipo": "servicio", "categoria": "Estética", "precio": 35000, "duracion": "40 minutos", "etiquetas": ["tinte", "color", "barba"], "disponibilidad": "por_agenda", "requisitos": "Avisar si hay alergias o tintes previos" },
+      { "nombre": "Cera mate para cabello", "tipo": "producto", "categoria": "Productos", "precio": 32000, "descripcion": "Fijación fuerte, acabado mate, 120 g.", "etiquetas": ["cera", "producto", "peinado"], "disponibilidad": "disponible", "stock": 20 },
+      { "nombre": "Aceite para barba", "tipo": "producto", "categoria": "Productos", "precio": 28000, "descripcion": "Hidrata y suaviza la barba, aroma madera.", "etiquetas": ["aceite", "barba", "producto"], "disponibilidad": "disponible", "stock": 15 }
+    ]
+  }
+}

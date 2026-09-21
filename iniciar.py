@@ -1,223 +1,132 @@
 #!/usr/bin/env python3
 """
-Script de Inicio Rápido del Agente de Ventas
+Arranque completo del agente: motor Python + puente Baileys.
+
+    python iniciar.py            # levanta los dos servicios
+    python iniciar.py --solo-api # solo el motor (sin WhatsApp)
+    python iniciar.py --qr       # muestra la URL del QR apenas inicia
+
+El puente Baileys necesita Node.js 18+ y `npm install` (se hace solo la primera
+vez). No requiere ngrok, Vercel ni ningún webhook público: el puente escucha los
+mensajes y le pasa cada uno al motor por HTTP local.
 """
+from __future__ import annotations
+
+import argparse
 import os
-import sys
+import shutil
+import signal
 import subprocess
+import sys
+import threading
 import time
 from pathlib import Path
 
-def print_header():
-    """Imprimir encabezado"""
-    print("🚀 AGENTE DE VENTAS CON EVOLUTION API")
-    print("=" * 50)
-    print("🤖 Bot de WhatsApp con IA para ventas de productos")
-    print("🔗 Sincronizado con Evolution API")
-    print()
+RAIZ = Path(__file__).resolve().parent
+BRIDGE = RAIZ / "baileys-bridge"
+sys.path.insert(0, str(RAIZ))
 
-def check_requirements():
-    """Verificar requisitos"""
-    print("🔍 Verificando requisitos...")
+AZUL, VERDE, AMARILLO, ROJO, RESET = "\033[94m", "\033[92m", "\033[93m", "\033[91m", "\033[0m"
 
-    # Verificar Python
-    if sys.version_info < (3, 8):
-        print("❌ Se requiere Python 3.8 o superior")
+
+def log(etiqueta: str, color: str, linea: str) -> None:
+    print(f"{color}[{etiqueta}]{RESET} {linea}", flush=True)
+
+
+def leer_salida(proceso: subprocess.Popen, etiqueta: str, color: str) -> None:
+    assert proceso.stdout is not None
+    for linea in proceso.stdout:
+        log(etiqueta, color, linea.rstrip())
+
+
+def instalar_dependencias_node() -> bool:
+    """Instala las dependencias de Baileys si hace falta."""
+    if (BRIDGE / "node_modules" / "@whiskeysockets" / "baileys").exists():
+        return True
+    log("bridge", AMARILLO, "Instalando dependencias de Baileys (solo la primera vez)…")
+    resultado = subprocess.run(["npm", "install", "--no-audit", "--no-fund"], cwd=BRIDGE)
+    if resultado.returncode != 0:
+        log("bridge", ROJO, "La instalación falló. Ejecuta 'npm install' dentro de baileys-bridge/")
         return False
-
-    print("✅ Python 3.8+ encontrado")
-
-    # Verificar archivos necesarios
-    required_files = ['.env', 'main.py', 'start_bot.py']
-    for file in required_files:
-        if not os.path.exists(file):
-            print(f"❌ Archivo requerido no encontrado: {file}")
-            return False
-
-    print("✅ Todos los archivos requeridos encontrados")
     return True
 
-def show_status():
-    """Mostrar estado actual"""
-    print("📊 ESTADO ACTUAL:")
-    print(f"   📁 Directorio: {os.getcwd()}")
-    print(f"   🐍 Python: {sys.version}")
-    print(f"   📄 .env: {'✅ Existe' if os.path.exists('.env') else '❌ No existe'}")
-    print(f"   🌐 Puerto 8000: {'✅ Libre' if is_port_free(8000) else '❌ Ocupado'}")
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Arranca el agente de ventas y el puente de WhatsApp")
+    parser.add_argument("--solo-api", action="store_true", help="no arrancar el puente Baileys")
+    parser.add_argument("--sin-qr-web", action="store_true", help="no mostrar la URL del panel QR")
+    argumentos = parser.parse_args()
+
+    from config.settings import settings
+
+    procesos: list[tuple[str, subprocess.Popen]] = []
+
+    def arrancar(nombre: str, comando: list[str], cwd: Path, color: str) -> subprocess.Popen:
+        proceso = subprocess.Popen(
+            comando, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, bufsize=1, env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+        procesos.append((nombre, proceso))
+        threading.Thread(target=leer_salida, args=(proceso, nombre, color), daemon=True).start()
+        return proceso
+
+    print(f"\n{AZUL}════════════════════════════════════════════════════════════{RESET}")
+    print(f"{AZUL}  AGENTE DE VENTAS · productos y servicios de cualquier negocio{RESET}")
+    print(f"{AZUL}════════════════════════════════════════════════════════════{RESET}\n")
+
+    # 1) motor de respuestas
+    python = sys.executable
+    arrancar("agente", [python, "main.py"], RAIZ, VERDE)
+    time.sleep(1.5)
+
+    # 2) puente Baileys
+    if not argumentos.solo_api:
+        if shutil.which("node") is None:
+            log("bridge", ROJO, "No encontré Node.js. Instálalo (nodejs.org) o usa --solo-api")
+        elif instalar_dependencias_node():
+            arrancar("bridge", ["node", "index.js"], BRIDGE, AZUL)
+
+    time.sleep(2)
+    puerto = settings.PORT
     print()
+    log("info", VERDE, f"Simulador web ....: http://localhost:{puerto}/simulador")
+    log("info", VERDE, f"Estado del agente : http://localhost:{puerto}/estado")
+    if not argumentos.solo_api and not argumentos.sin_qr_web:
+        log("info", AMARILLO, "Panel del QR ......: revisa la línea del puente más arriba (o abre el puerto del panel)")
+        log("info", AMARILLO, "Escanea el QR: WhatsApp > Dispositivos vinculados > Vincular dispositivo")
+    log("info", VERDE, "Detén todo con Ctrl+C")
 
-def is_port_free(port):
-    """Verificar si un puerto está libre"""
-    try:
-        import socket
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(('', port))
-            return True
-    except:
-        return False
+    deteniendo = False
 
-def show_menu():
-    """Mostrar menú de opciones"""
-    print("🎯 ¿QUÉ DESEAS HACER?")
-    print("=" * 30)
-    print("1. 🚀 Iniciar Bot Completo")
-    print("2. 🧪 Probar Configuración")
-    print("3. 🔧 Configurar Webhook en Evolution")
-    print("4. 📊 Ver Estado del Sistema")
-    print("5. 📚 Ver Documentación")
-    print("6. ❌ Salir")
-    print()
+    def detener(*_):
+        nonlocal deteniendo
+        if deteniendo:
+            return
+        deteniendo = True
+        print()
+        log("info", AMARILLO, "Cerrando servicios…")
+        for nombre, proceso in procesos:
+            if proceso.poll() is None:
+                proceso.terminate()
+        for nombre, proceso in procesos:
+            try:
+                proceso.wait(timeout=8)
+            except subprocess.TimeoutExpired:
+                proceso.kill()
+        log("info", VERDE, "Listo. ¡Hasta luego!")
+        sys.exit(0)
 
-def run_bot():
-    """Ejecutar el bot completo"""
-    print("🚀 INICIANDO BOT COMPLETO...")
-    print("=" * 40)
-
-    try:
-        # Ejecutar el sistema completo
-        result = subprocess.run([
-            sys.executable, 'run_complete_system.py'
-        ], cwd=os.getcwd())
-
-        if result.returncode == 0:
-            print("✅ Bot ejecutado correctamente")
-        else:
-            print(f"❌ Error ejecutando bot (código: {result.returncode})")
-
-    except KeyboardInterrupt:
-        print("🛑 Bot detenido por usuario")
-    except Exception as e:
-        print(f"❌ Error inesperado: {str(e)}")
-
-def test_config():
-    """Probar configuración"""
-    print("🧪 PROBANDO CONFIGURACIÓN...")
-    print("=" * 40)
-
-    try:
-        result = subprocess.run([
-            sys.executable, 'test_config.py'
-        ], cwd=os.getcwd())
-
-        if result.returncode == 0:
-            print("✅ Configuración verificada")
-        else:
-            print(f"❌ Error en configuración (código: {result.returncode})")
-
-    except Exception as e:
-        print(f"❌ Error ejecutando prueba: {str(e)}")
-
-def show_evolution_setup():
-    """Mostrar instrucciones de Evolution"""
-    print("🔧 CONFIGURACIÓN DE EVOLUTION API")
-    print("=" * 40)
-    print()
-    print("📍 URL del Webhook:")
-    print("   http://192.168.18.69:8000/webhook")
-    print()
-    print("🌐 URL de Evolution API:")
-    print("   https://evoapi2-evolution-api.ovw3ar.easypanel.host")
-    print()
-    print("📋 PASOS:")
-    print("   1. Ve a tu Evolution API")
-    print("   2. Configura el webhook con la URL arriba")
-    print("   3. Asegúrate de que la instancia esté conectada")
-    print("   4. Envía un mensaje de prueba")
-    print()
-    print("📖 Consulta GUIA_EVOLUTION_API.md para detalles completos")
-
-def show_system_status():
-    """Mostrar estado del sistema"""
-    print("📊 ESTADO DEL SISTEMA")
-    print("=" * 40)
-    print()
-
-    # Verificar procesos
-    try:
-        result = subprocess.run([
-            'netstat', '-an'
-        ], capture_output=True, text=True, cwd=os.getcwd())
-
-        if '8000' in result.stdout:
-            print("🌐 Puerto 8000: ✅ En uso (posiblemente nuestro bot)")
-        else:
-            print("🌐 Puerto 8000: ✅ Libre")
-
-    except:
-        print("🌐 Puerto 8000: ❓ No se pudo verificar")
-
-    # Verificar archivos de log
-    log_files = ['logs/agente_ventas.log', 'logs/sync_evolution.log', 'logs/sistema_completo.log']
-    for log_file in log_files:
-        if os.path.exists(log_file):
-            size = os.path.getsize(log_file)
-            print(f"📄 {log_file}: ✅ {size} bytes")
-        else:
-            print(f"📄 {log_file}: ❌ No existe")
-
-    print()
-    print("💡 Para ver logs en tiempo real:")
-    print("   tail -f logs/agente_ventas.log")
-
-def show_documentation():
-    """Mostrar documentación"""
-    print("📚 DOCUMENTACIÓN DISPONIBLE")
-    print("=" * 40)
-    print()
-    print("📖 Archivos de documentación:")
-    print("   • README.md - Documentación principal")
-    print("   • GUIA_EVOLUTION_API.md - Configuración Evolution")
-    print("   • .env.example - Ejemplo de configuración")
-    print()
-    print("🧪 Scripts de prueba:")
-    print("   • test_config.py - Verificar configuración")
-    print("   • test_webhook.py - Probar webhook")
-    print()
-    print("🚀 Scripts de ejecución:")
-    print("   • main.py - Servidor básico")
-    print("   • start_bot.py - Bot con Evolution")
-    print("   • run_complete_system.py - Sistema completo")
-    print("   • sync_with_evolution.py - Sincronizador")
-
-def main():
-    """Función principal"""
-    print_header()
-
-    if not check_requirements():
-        print("❌ Requisitos no cumplidos. Revisa la instalación.")
-        return
-
-    show_status()
+    signal.signal(signal.SIGINT, detener)
+    signal.signal(signal.SIGTERM, detener)
 
     while True:
-        show_menu()
+        time.sleep(1)
+        for nombre, proceso in procesos:
+            codigo = proceso.poll()
+            if codigo is not None:
+                log(nombre, ROJO, f"el proceso terminó con código {codigo}. Cerrando el resto…")
+                detener()
 
-        try:
-            choice = input("Selecciona una opción (1-6): ").strip()
-
-            if choice == '1':
-                run_bot()
-            elif choice == '2':
-                test_config()
-            elif choice == '3':
-                show_evolution_setup()
-            elif choice == '4':
-                show_system_status()
-            elif choice == '5':
-                show_documentation()
-            elif choice == '6':
-                print("👋 ¡Hasta luego!")
-                break
-            else:
-                print("❌ Opción no válida. Intenta de nuevo.")
-
-            print("\n" + "="*50 + "\n")
-
-        except KeyboardInterrupt:
-            print("\n👋 ¡Hasta luego!")
-            break
-        except Exception as e:
-            print(f"❌ Error: {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

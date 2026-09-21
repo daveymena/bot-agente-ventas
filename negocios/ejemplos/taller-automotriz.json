@@ -1,0 +1,41 @@
+{
+  "_instrucciones": "Ejemplo para talleres automotrices, motos, servicio técnico de electrodomésticos o reparaciones a domicilio.",
+  "negocio": {
+    "nombre": "Taller Mecánico Los Andes",
+    "tipo_negocio": "mixto",
+    "descripcion": "Mantenimiento y reparación de carros y motos, con diagnóstico previo sin costo.",
+    "ciudad": "Palmira",
+    "direccion": "Km 3 vía Palmira - Rozo",
+    "telefono": "573006667788",
+    "moneda": "COP",
+    "horarios": [
+      { "dia": "lunes", "abre": "07:30", "cierra": "17:30" },
+      { "dia": "martes", "abre": "07:30", "cierra": "17:30" },
+      { "dia": "miercoles", "abre": "07:30", "cierra": "17:30" },
+      { "dia": "jueves", "abre": "07:30", "cierra": "17:30" },
+      { "dia": "viernes", "abre": "07:30", "cierra": "17:30" },
+      { "dia": "sabado", "abre": "08:00", "cierra": "13:00" },
+      { "dia": "domingo", "cerrado": true }
+    ],
+    "metodos_pago": ["Efectivo", "Transferencia", "Nequi", "Tarjeta débito/crédito"],
+    "cobertura": "Palmira, Cali, Yumbo y Candelaria (grúa y servicio a domicilio)",
+    "envio": "Recogemos tu vehículo sin costo en Palmira; en otras ciudades la grúa se cobra según distancia.",
+    "tono": "técnico pero claro, sin tecnicismos innecesarios",
+    "mensaje_bienvenida": "¡Hola! 🔧 Somos *Taller Mecánico Los Andes*. Cuéntame qué le pasa a tu vehículo y te digo cómo lo revisamos.",
+    "politicas": ["El diagnóstico es sin costo si apruebas la reparación.", "Todas las reparaciones tienen 6 meses o 10.000 km de garantía, lo que ocurra primero.", "No trabajamos con repuestos sin autorización del cliente."],
+    "promociones": ["Cambio de aceite + filtros con 15% de descuento de martes a jueves", "Revisión de frenos gratis en la revisión de los 10.000 km"],
+    "faqs": [
+      { "pregunta": "¿Hacen revisión precompra?", "respuesta": "Sí 🔍 Revisamos motor, chasis, suspensión y estado general, y te entregamos un informe con fotos." },
+      { "pregunta": "¿Dan garantía por la reparación?", "respuesta": "Sí, 6 meses o 10.000 km según lo que se intervenga 🛡️ y queda por escrito en la orden de servicio." }
+    ],
+    "catalogo": [
+      { "nombre": "Cambio de aceite y filtros", "tipo": "servicio", "categoria": "Mantenimiento", "precio": 180000, "precio_texto": "$180.000 (aceite y filtros incluidos)", "duracion": "45 minutos", "modalidad": "presencial", "descripcion": "Aceite sintético, filtro de aire, filtro de combustible y revisión de niveles.", "incluye": ["Aceite sintético", "Filtro de aire", "Filtro de combustible", "Revisión de 20 puntos"], "etiquetas": ["aceite", "cambio de aceite", "mantenimiento", "filtros"], "disponibilidad": "por_agenda", "agenda": "Atención con cita de lunes a sábado", "destacado": true },
+      { "nombre": "Revisión de frenos", "tipo": "servicio", "categoria": "Frenos", "precio_texto": "Diagnóstico gratis; cambio desde $220.000 según el repuesto", "duracion": "1 a 3 horas", "descripcion": "Cambio de pastillas o bandas, rectificado de discos y purga del sistema.", "etiquetas": ["frenos", "pastillas", "discos"], "disponibilidad": "por_agenda", "destacado": true },
+      { "nombre": "Revisión precompra de vehículo", "tipo": "servicio", "categoria": "Inspección", "precio": 150000, "duracion": "1 hora", "descripcion": "Inspección de más de 50 puntos con informe digital y fotografías.", "incluye": ["Informe digital", "Fotos", "Escaneo OBD"], "etiquetas": ["precompra", "revision", "inspeccion", "usado"], "disponibilidad": "por_agenda" },
+      { "nombre": "Sincronización y escáner OBD", "tipo": "servicio", "categoria": "Diagnóstico", "precio": 90000, "duracion": "40 minutos", "descripcion": "Lectura de fallas con escáner, borrado de códigos y prueba en carretera.", "etiquetas": ["escaner", "obd", "diagnostico", "falla", "testigo"], "disponibilidad": "por_agenda" },
+      { "nombre": "Llantas 175/70 R13", "tipo": "producto", "categoria": "Llantas", "precio": 210000, "descripcion": "Llanta nueva con garantía de fábrica. Instalación y balanceo incluidos.", "etiquetas": ["llanta", "neumatico", "rin 13"], "disponibilidad": "disponible", "stock": 12, "garantia": "12 meses por defecto de fábrica" },
+      { "nombre": "Batería 13 placas", "tipo": "producto", "categoria": "Baterías", "precio": 380000, "descripcion": "Batería libre de mantenimiento, 12 meses de garantía, instalación gratis.", "etiquetas": ["bateria", "acumulador"], "disponibilidad": "disponible", "stock": 8, "garantia": "12 meses" },
+      { "nombre": "Revisión técnico-mecánica", "tipo": "servicio", "categoria": "Inspección", "precio": 120000, "duracion": "2 horas", "descripcion": "Alistamiento completo para que pases la revisión sin contratiempos.", "etiquetas": ["revision tecnicomecanica", "rtm", "alistamiento"], "disponibilidad": "por_agenda" }
+    ]
+  }
+}

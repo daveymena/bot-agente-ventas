@@ -1,0 +1,14 @@
+# ============================================================
+# Proveedores de IA (opcionales)
+# El agente responde correctamente SIN estos paquetes, usando
+# el motor determinístico basado en el catálogo del negocio.
+# ============================================================
+-r requirements.txt
+
+# Google Gemini (prioridad 1 si hay API key)
+google-generativeai>=0.4
+
+# OpenAI (respuestas + transcripción de audios con Whisper)
+openai>=1.14
+
+# Ollama se usa por HTTP, no requiere paquete extra.

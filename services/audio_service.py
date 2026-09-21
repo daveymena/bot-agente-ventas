@@ -1,167 +1,119 @@
 """
-Servicio para procesar archivos de audio (transcripción)
-"""
-import asyncio
-import logging
-import tempfile
-import os
-from typing import Optional, Dict, Any
-import openai
+Transcripción de notas de voz.
 
-import sys
+Es opcional: si no hay proveedor de transcripción (OpenAI Whisper) el agente
+responde pidiendo el mensaje por escrito, en lugar de fallar en silencio.
+"""
+from __future__ import annotations
+
+import asyncio
+import base64
+import logging
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import tempfile
+from typing import Any, Dict, Optional, Tuple
 
 from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
+try:
+    import openai  # type: ignore
+    _TIENE_OPENAI = True
+except Exception:  # pragma: no cover
+    openai = None  # type: ignore
+    _TIENE_OPENAI = False
+
+EXTENSIONES = {
+    "audio/ogg": ".ogg", "audio/opus": ".opus", "audio/mpeg": ".mp3", "audio/mp3": ".mp3",
+    "audio/mp4": ".m4a", "audio/x-m4a": ".m4a", "audio/aac": ".aac", "audio/wav": ".wav",
+    "audio/webm": ".webm", "audio/amr": ".amr", "audio/3gpp": ".3gp",
+}
+
+
 class AudioService:
-    """Servicio para procesar archivos de audio"""
+    """Convierte notas de voz en texto."""
 
     def __init__(self):
-        self.openai_api_key = settings.OPENAI_API_KEY
-        self.temp_dir = settings.TEMP_DIR
+        self.openai_api_key = settings.OPENAI_API_KEY if _TIENE_OPENAI else ""
+        self.temp_dir = settings.temp_path()
+        self.modelo = os.getenv("WHISPER_MODEL", "whisper-1")
+        self.idioma = os.getenv("WHISPER_LANGUAGE", "es")
 
-    async def transcribe_audio(self, audio_data: bytes, mime_type: str = "audio/mpeg") -> Optional[str]:
-        """
-        Transcribir audio usando OpenAI Whisper
+    @property
+    def disponible(self) -> bool:
+        return bool(self.openai_api_key)
 
-        Args:
-            audio_data: Datos del archivo de audio
-            mime_type: Tipo MIME del audio
-
-        Returns:
-            Optional[str]: Texto transcrito o None si hay error
-        """
-        if not self.openai_api_key:
-            logger.error("OpenAI API key no configurada para transcripción")
-            return None
-
-        try:
-            # Crear archivo temporal
-            with tempfile.NamedTemporaryFile(delete=False, suffix=self._get_extension(mime_type)) as temp_file:
-                temp_file.write(audio_data)
-                temp_file_path = temp_file.name
-
-            try:
-                # Usar OpenAI Whisper para transcripción
-                client = openai.OpenAI(api_key=self.openai_api_key)
-
-                with open(temp_file_path, "rb") as audio_file:
-                    transcription = client.audio.transcriptions.create(
-                        model="whisper-1",
-                        file=audio_file,
-                        response_format="text"
-                    )
-
-                return transcription.strip() if transcription else None
-
-            finally:
-                # Limpiar archivo temporal
-                if os.path.exists(temp_file_path):
-                    os.unlink(temp_file_path)
-
-        except Exception as e:
-            logger.error(f"Error transcribiendo audio: {str(e)}")
-            return None
-
-    def _get_extension(self, mime_type: str) -> str:
-        """
-        Obtener extensión de archivo basada en MIME type
-
-        Args:
-            mime_type: Tipo MIME
-
-        Returns:
-            str: Extensión del archivo
-        """
-        mime_to_ext = {
-            "audio/mpeg": ".mp3",
-            "audio/mp3": ".mp3",
-            "audio/wav": ".wav",
-            "audio/wave": ".wav",
-            "audio/ogg": ".ogg",
-            "audio/mp4": ".m4a",
-            "audio/aac": ".aac",
-            "audio/webm": ".webm"
+    def estado(self) -> Dict[str, Any]:
+        return {
+            "disponible": self.disponible,
+            "modelo": self.modelo if self.disponible else None,
+            "motivo": None if self.disponible else "falta OPENAI_API_KEY (opcional)",
         }
 
-        return mime_to_ext.get(mime_type, ".mp3")
+    def _extension(self, mimetype: str) -> str:
+        base = (mimetype or "").split(";")[0].strip().lower()
+        return EXTENSIONES.get(base, ".ogg")
 
-    async def convert_audio_format(self, audio_data: bytes, from_format: str, to_format: str) -> Optional[bytes]:
+    async def transcribir_media(self, media: Dict[str, Any]) -> Tuple[Optional[str], str]:
         """
-        Convertir formato de audio (placeholder para futuras implementaciones)
-
-        Args:
-            audio_data: Datos del audio
-            from_format: Formato original
-            to_format: Formato destino
-
-        Returns:
-            Optional[bytes]: Audio convertido o None
+        Devuelve (texto, motivo). Si no se puede transcribir, texto=None y un
+        motivo legible para decidir qué contestarle al cliente.
         """
-        # Por ahora, solo retornamos el audio original
-        # En una implementación futura se podría usar ffmpeg o similar
-        logger.info(f"Conversión de audio {from_format} -> {to_format} (no implementada)")
-        return audio_data
+        if not media:
+            return None, "no llegó el audio"
+        base64_audio = media.get("base64")
+        if not base64_audio:
+            return None, "audio no descargado"
+        if not self.disponible:
+            return None, "transcripción no configurada"
+        try:
+            crudo = base64.b64decode(base64_audio)
+        except Exception as error:
+            return None, f"audio inválido: {error}"
+        return await self.transcribir_bytes(crudo, media.get("mimetype", "audio/ogg"))
 
-    def is_audio_message(self, message_type: str) -> bool:
-        """
-        Verificar si el tipo de mensaje es audio
+    async def transcribir_bytes(self, datos: bytes, mimetype: str = "audio/ogg") -> Tuple[Optional[str], str]:
+        if not self.disponible:
+            return None, "transcripción no configurada"
+        if not datos:
+            return None, "audio vacío"
 
-        Args:
-            message_type: Tipo de mensaje
+        self.temp_dir.mkdir(parents=True, exist_ok=True)
+        ruta = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                delete=False, suffix=self._extension(mimetype), dir=str(self.temp_dir)
+            ) as archivo:
+                archivo.write(datos)
+                ruta = archivo.name
 
-        Returns:
-            bool: True si es mensaje de audio
-        """
-        return message_type.lower() in ['audio', 'voice', 'audioMessage']
+            cliente = openai.OpenAI(api_key=self.openai_api_key)
 
-    def get_supported_formats(self) -> list:
-        """
-        Obtener formatos de audio soportados
+            def llamar() -> str:
+                with open(ruta, "rb") as audio:
+                    respuesta = cliente.audio.transcriptions.create(
+                        model=self.modelo,
+                        file=audio,
+                        language=self.idioma,
+                        response_format="text",
+                    )
+                return respuesta if isinstance(respuesta, str) else getattr(respuesta, "text", "")
 
-        Returns:
-            list: Lista de formatos soportados
-        """
-        return [
-            "audio/mpeg",
-            "audio/mp3",
-            "audio/wav",
-            "audio/ogg",
-            "audio/mp4",
-            "audio/aac",
-            "audio/webm"
-        ]
-
-    def is_format_supported(self, mime_type: str) -> bool:
-        """
-        Verificar si el formato está soportado
-
-        Args:
-            mime_type: Tipo MIME a verificar
-
-        Returns:
-            bool: True si está soportado
-        """
-        return mime_type in self.get_supported_formats()
-
-    def validate_audio_data(self, audio_data: bytes) -> bool:
-        """
-        Validar datos de audio
-
-        Args:
-            audio_data: Datos del audio
-
-        Returns:
-            bool: True si los datos son válidos
-        """
-        if not audio_data or len(audio_data) == 0:
-            return False
-
-        # Verificar tamaño mínimo (1KB) y máximo (25MB)
-        min_size = 1024
-        max_size = 25 * 1024 * 1024
-
-        return min_size <= len(audio_data) <= max_size
+            texto = await asyncio.wait_for(asyncio.to_thread(llamar), timeout=settings.AI_TIMEOUT * 2)
+            texto = (texto or "").strip()
+            if not texto:
+                return None, "la transcripción llegó vacía"
+            logger.info("Audio transcrito (%s caracteres)", len(texto))
+            return texto, ""
+        except asyncio.TimeoutError:
+            return None, "la transcripción tardó demasiado"
+        except Exception as error:
+            logger.error("Error transcribiendo audio: %s", error)
+            return None, f"error transcribiendo: {error}"
+        finally:
+            if ruta and os.path.exists(ruta):
+                try:
+                    os.unlink(ruta)
+                except OSError:
+                    pass

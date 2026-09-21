@@ -1,0 +1,249 @@
+{
+  "_instrucciones": [
+    "Este archivo es TODO el perfil de tu negocio: quién es y qué vende.",
+    "Edítalo con tus datos reales y guarda: el agente lo recarga solo (no hay que reiniciar).",
+    "Sirve igual para cualquier rubro: tienda, restaurante, barbería, taller, clínica, inmobiliaria, agencia...",
+    "Para cambiar de negocio, reemplaza este archivo por uno de negocios/ejemplos/.",
+    "'tipo': 'producto' para cosas físicas/digitales y 'tipo': 'servicio' para lo que se agenda o se presta.",
+    "Si un precio es variable, usa 'precio_texto' (ej: 'Desde $80.000 según cantidad')."
+  ],
+
+  "negocio": {
+    "nombre": "MegaTecno Cali",
+    "tipo_negocio": "mixto",
+    "descripcion": "Vendemos tecnología y prestamos servicio técnico a domicilio.",
+    "slogan": "Tecnología y servicio, bien hechos",
+    "ciudad": "Cali",
+    "direccion": "Cra 45 # 26-30, Local 12",
+    "zona": "Centro",
+    "telefono": "573001112233",
+    "email": "ventas@megatecno.com",
+    "sitio_web": "https://megatecno.com",
+    "mapa_url": "https://maps.google.com/?q=Cra+45+26-30+Cali",
+    "moneda": "COP",
+
+    "horarios": [
+      { "dia": "lunes",   "abre": "08:00", "cierra": "18:00" },
+      { "dia": "martes",  "abre": "08:00", "cierra": "18:00" },
+      { "dia": "miercoles", "abre": "08:00", "cierra": "18:00" },
+      { "dia": "jueves",  "abre": "08:00", "cierra": "18:00" },
+      { "dia": "viernes", "abre": "08:00", "cierra": "18:00" },
+      { "dia": "sabado",  "abre": "09:00", "cierra": "14:00" },
+      { "dia": "domingo", "cerrado": true }
+    ],
+
+    "metodos_pago": ["Efectivo", "Nequi", "Daviplata", "Transferencia Bancolombia", "Tarjeta débito/crédito"],
+    "envio": "Envío gratis en Cali en compras desde $150.000. Resto del Valle: $15.000 a $25.000 según la ciudad, 1 a 3 días hábiles.",
+    "cobertura": "Cali, Palmira, Yumbo, Jamundí y Candelaria (servicio técnico a domicilio en Cali).",
+    "tiempo_respuesta": "Respondemos en minutos en horario de atención.",
+
+    "tono": "cercano, profesional y directo, tuteando al cliente",
+    "mensaje_bienvenida": "¡Hola! 👋 Bienvenido(a) a *MegaTecno Cali*. Vendemos tecnología y también te la instalamos o te la reparamos. ¿Qué necesitas hoy?",
+    "mensaje_despedida": "¡Gracias por escribir a MegaTecno Cali! 🙌 Aquí estamos cuando necesites.",
+    "mensaje_humano": "¡Claro! 🙌 Ya avisé a una persona del equipo y te escribe por este mismo chat en unos minutos.",
+    "mensaje_post_venta": "¡Con gusto! Si algo falla o necesitas instalarlo, escríbenos: tienes soporte por este mismo chat.",
+
+    "politicas": [
+      "Garantía de 12 meses en equipos nuevos y 3 meses en usados.",
+      "Cambio de producto dentro de los 5 días hábiles con empaque original.",
+      "Servicio técnico con 90 días de garantía sobre la reparación.",
+      "No cobramos diagnóstico si aceptas la reparación."
+    ],
+    "promociones": [
+      "10% de descuento pagando en efectivo o transferencia.",
+      "Lleva el mantenimiento + limpieza profunda y te descontamos $20.000.",
+      "Combo oficina: 3 equipos o más con 12% de descuento."
+    ],
+
+    "faqs": [
+      { "pregunta": "¿Dan factura?", "respuesta": "Sí, emitimos factura electrónica por cualquier compra o servicio. Solo dinos el NIT o cédula al confirmar el pedido. 🧾" },
+      { "pregunta": "¿Aceptan tarjeta?", "respuesta": "Sí, aceptamos tarjeta débito y crédito 💳, además de efectivo, Nequi, Daviplata y transferencia." },
+      { "pregunta": "¿Puedo pagar en cuotas?", "respuesta": "Con tarjeta de crédito sí, según las cuotas que ofrezca tu banco. Cuéntame qué equipo quieres y te digo las opciones." },
+      { "pregunta": "¿Tienen tienda física?", "respuesta": "Sí: Cra 45 # 26-30, Local 12 (Centro, Cali). También envíos a todo el Valle." }
+    ],
+
+    "palabras_humano": ["hablar con alguien", "con un asesor", "persona real", "un humano", "gerente", "que me llamen"],
+    "palabras_servicio": ["instalación", "reparación", "mantenimiento", "a domicilio", "servicio técnico"],
+
+    "fuentes_scraping": [
+      { "nombre": "MegaPack", "url": "https://megapack-nu.vercel.app/", "selector": "h1, h2, h3, .product-title", "tipo": "producto" },
+      { "nombre": "MegaComputer", "url": "https://megacomputer.com.co/", "selector": "h1, h2, h3, .product-title", "tipo": "producto" }
+    ],
+
+    "catalogo": [
+      {
+        "nombre": "Portátil Lenovo IdeaPad 3",
+        "tipo": "producto",
+        "categoria": "Computadores",
+        "descripcion": "Core i5, 8GB RAM, SSD 512GB, pantalla 15.6\" Full HD. Ideal para estudio y oficina.",
+        "precio": 2150000,
+        "disponibilidad": "disponible",
+        "stock": 6,
+        "garantia": "12 meses",
+        "entrega": "Envío en 24h en Cali",
+        "etiquetas": ["portátil", "laptop", "lenovo", "oficina", "estudio", "computador"],
+        "sinonimos": ["notebook", "pc portatil"],
+        "atributos": { "Procesador": "Core i5", "RAM": "8GB", "Disco": "SSD 512GB", "Pantalla": "15.6\"" },
+        "imagen": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800",
+        "destacado": true
+      },
+      {
+        "nombre": "Computador de escritorio Gamer Ryzen 5",
+        "tipo": "producto",
+        "categoria": "Computadores",
+        "descripcion": "Ryzen 5, 16GB RAM, SSD 1TB, RTX 3060. Armado y probado en tienda.",
+        "precio": 3890000,
+        "disponibilidad": "disponible",
+        "stock": 3,
+        "garantia": "12 meses",
+        "etiquetas": ["pc gamer", "escritorio", "torre", "ryzen", "gaming"],
+        "atributos": { "Procesador": "Ryzen 5", "RAM": "16GB", "Gráfica": "RTX 3060" },
+        "promocion": "Incluye instalación de Windows y programas básicos",
+        "imagen": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=800"
+      },
+      {
+        "nombre": "Celular Samsung Galaxy A55 128GB",
+        "tipo": "producto",
+        "categoria": "Celulares",
+        "descripcion": "Pantalla Super AMOLED 6.6\", cámara 50MP, batería 5000mAh, 8GB RAM.",
+        "precio": 1499000,
+        "disponibilidad": "disponible",
+        "stock": 8,
+        "garantia": "12 meses",
+        "etiquetas": ["celular", "samsung", "galaxy", "smartphone", "telefono"],
+        "atributos": { "Almacenamiento": "128GB", "RAM": "8GB", "Cámara": "50MP" },
+        "imagen": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800",
+        "destacado": true
+      },
+      {
+        "nombre": "iPhone 13 128GB reacondicionado",
+        "tipo": "producto",
+        "categoria": "Celulares",
+        "descripcion": "Batería sobre 85%, sin detalles, libre de fábrica. Incluye cargador y vidrio templado.",
+        "precio": 2350000,
+        "disponibilidad": "disponible",
+        "stock": 2,
+        "garantia": "6 meses",
+        "etiquetas": ["iphone", "apple", "celular", "ios"],
+        "atributos": { "Almacenamiento": "128GB", "Condición": "Reacondicionado" },
+        "imagen": "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800"
+      },
+      {
+        "nombre": "Audífonos Bluetooth con cancelación de ruido",
+        "tipo": "producto",
+        "categoria": "Accesorios",
+        "descripcion": "Hasta 30 horas de batería, ANC, estuche de carga y cable USB-C.",
+        "precio": 189000,
+        "precio_texto": "Desde $189.000",
+        "disponibilidad": "disponible",
+        "stock": 25,
+        "etiquetas": ["audifonos", "auriculares", "bluetooth", "anc", "accesorios"],
+        "imagen": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800"
+      },
+      {
+        "nombre": "Mouse inalámbrico ergonómico",
+        "tipo": "producto",
+        "categoria": "Accesorios",
+        "descripcion": "Silencioso, 1600 DPI, batería recargable, compatibles Windows/Mac.",
+        "precio": 45000,
+        "disponibilidad": "disponible",
+        "stock": 40,
+        "etiquetas": ["mouse", "accesorios", "inalambrico", "oficina"],
+        "sinonimos": ["raton"]
+      },
+      {
+        "nombre": "Impresora multifuncional WiFi",
+        "tipo": "producto",
+        "categoria": "Impresoras",
+        "descripcion": "Imprime, escanea y copia. Sistema continuo, conexión WiFi y USB.",
+        "precio": 749000,
+        "disponibilidad": "agotado",
+        "stock": 0,
+        "etiquetas": ["impresora", "multifuncional", "escaner", "wifi"],
+        "garantia": "12 meses"
+      },
+      {
+        "nombre": "Disco duro SSD 1TB NVMe",
+        "tipo": "producto",
+        "categoria": "Componentes",
+        "descripcion": "Lectura hasta 3500 MB/s. Compatible con portátiles y PC de escritorio.",
+        "precio": 329000,
+        "disponibilidad": "disponible",
+        "stock": 15,
+        "etiquetas": ["ssd", "disco", "nvme", "almacenamiento", "componentes"],
+        "garantia": "12 meses"
+      },
+
+      {
+        "nombre": "Mantenimiento preventivo de portátil o PC",
+        "tipo": "servicio",
+        "categoria": "Servicio técnico",
+        "descripcion": "Limpieza profunda, cambio de pasta térmica, actualización de sistema y diagnóstico completo.",
+        "precio": 90000,
+        "disponibilidad": "por_agenda",
+        "duracion": "1 a 2 horas",
+        "modalidad": "presencial (a domicilio o en el local)",
+        "incluye": ["Limpieza interna", "Pasta térmica", "Diagnóstico", "Informe técnico"],
+        "agenda": "Agendamos de lunes a sábado; a domicilio en Cali el mismo día si hay cupo",
+        "garantia": "90 días sobre el servicio",
+        "etiquetas": ["mantenimiento", "limpieza", "pasta termica", "revisión", "servicio tecnico"],
+        "sinonimos": ["arreglo de computador", "revision de pc"],
+        "destacado": true
+      },
+      {
+        "nombre": "Instalación de Windows, drivers y programas",
+        "tipo": "servicio",
+        "categoria": "Servicio técnico",
+        "descripcion": "Instalación limpia de Windows 10/11, drivers, ofimática y antivirus.",
+        "precio": 70000,
+        "disponibilidad": "por_agenda",
+        "duracion": "2 horas",
+        "modalidad": "presencial o remoto",
+        "incluye": ["Windows activado", "Drivers", "Ofimática", "Antivirus"],
+        "agenda": "Se agenda de lunes a viernes en jornada de la tarde",
+        "etiquetas": ["instalacion", "windows", "formatear", "drivers", "software"]
+      },
+      {
+        "nombre": "Reparación de celulares (pantalla o batería)",
+        "tipo": "servicio",
+        "categoria": "Servicio técnico",
+        "descripcion": "Cambio de pantalla, batería, puerto de carga o cámara según diagnóstico.",
+        "precio_texto": "Desde $120.000 según el modelo y el repuesto",
+        "disponibilidad": "por_agenda",
+        "duracion": "1 a 3 días hábiles",
+        "modalidad": "presencial (recibimos el equipo en el local)",
+        "requisitos": "El equipo debe llegar desbloqueado y sin funda",
+        "incluye": ["Diagnóstico", "Repuesto original o homologado", "Garantía escrita"],
+        "garantia": "90 días en el repuesto instalado",
+        "etiquetas": ["reparacion", "pantalla", "bateria", "celular", "servicio tecnico"],
+        "imagen": "https://images.unsplash.com/photo-1597740985671-2aad824c8b3b?w=800"
+      },
+      {
+        "nombre": "Internet y redes para hogar u oficina",
+        "tipo": "servicio",
+        "categoria": "Servicios para empresas",
+        "descripcion": "Instalación y configuración de router, red WiFi, cableado de puntos y pruebas de velocidad.",
+        "precio_texto": "Cotización según el área: desde $250.000",
+        "disponibilidad": "bajo_pedido",
+        "duracion": "3 a 5 horas",
+        "modalidad": "presencial",
+        "requisitos": "Definir puntos de red y tipo de conexión",
+        "incluye": ["Router configurado", "Cableado", "Pruebas de velocidad"],
+        "etiquetas": ["redes", "wifi", "internet", "cableado", "router", "empresa"]
+      },
+      {
+        "nombre": "Soporte técnico mensual para empresas (plan)",
+        "tipo": "plan",
+        "categoria": "Servicios para empresas",
+        "descripcion": "Atención remota ilimitada y visitas técnicas programadas para tu empresa.",
+        "precio": 350000,
+        "precio_texto": "$350.000/mes (hasta 10 equipos)",
+        "disponibilidad": "disponible",
+        "duracion": "Mensual, renovable",
+        "modalidad": "remoto + visitas",
+        "incluye": ["Soporte remoto ilimitado", "2 visitas al mes", "Mantenimiento preventivo", "Informe mensual"],
+        "etiquetas": ["soporte", "plan", "mensual", "empresa", "pymes", "mantenimiento"]
+      }
+    ]
+  }
+}
